@@ -14,6 +14,7 @@
 		684D5E3C200D89F10080B78B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */; };
 		684D5E47200D89F10080B78B /* loclogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E46200D89F10080B78B /* loclogTests.swift */; };
 		684D5E52200D89F10080B78B /* loclogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E51200D89F10080B78B /* loclogUITests.swift */; };
+		68BB273B2015742E00769962 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BB273A2015742E00769962 /* LogEntry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6816B6542014747F004E7D22 /* loclog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = loclog.entitlements; sourceTree = "<group>"; };
 		684D5E2E200D89F10080B78B /* loclog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = loclog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		684D5E31200D89F10080B78B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		684D5E33200D89F10080B78B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -47,6 +49,7 @@
 		684D5E4D200D89F10080B78B /* loclogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		684D5E51200D89F10080B78B /* loclogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loclogUITests.swift; sourceTree = "<group>"; };
 		684D5E53200D89F10080B78B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		68BB273A2015742E00769962 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,12 +100,14 @@
 		684D5E30200D89F10080B78B /* loclog */ = {
 			isa = PBXGroup;
 			children = (
+				6816B6542014747F004E7D22 /* loclog.entitlements */,
 				684D5E31200D89F10080B78B /* AppDelegate.swift */,
 				684D5E33200D89F10080B78B /* ViewController.swift */,
 				684D5E35200D89F10080B78B /* Main.storyboard */,
 				684D5E38200D89F10080B78B /* Assets.xcassets */,
 				684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */,
 				684D5E3D200D89F10080B78B /* Info.plist */,
+				68BB273A2015742E00769962 /* LogEntry.swift */,
 			);
 			path = loclog;
 			sourceTree = "<group>";
@@ -194,6 +199,14 @@
 					684D5E2D200D89F10080B78B = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 0;
+							};
+						};
 					};
 					684D5E41200D89F10080B78B = {
 						CreatedOnToolsVersion = 9.2;
@@ -261,6 +274,7 @@
 			files = (
 				684D5E34200D89F10080B78B /* ViewController.swift in Sources */,
 				684D5E32200D89F10080B78B /* AppDelegate.swift in Sources */,
+				68BB273B2015742E00769962 /* LogEntry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
