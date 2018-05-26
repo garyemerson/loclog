@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6833628320B919FD0074BB56 /* libpq.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6833628220B919FD0074BB56 /* libpq.framework */; };
+		6833628820B91C470074BB56 /* bridge.c in Sources */ = {isa = PBXBuildFile; fileRef = 6833628720B91C470074BB56 /* bridge.c */; };
 		684D5E32200D89F10080B78B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E31200D89F10080B78B /* AppDelegate.swift */; };
 		684D5E34200D89F10080B78B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E33200D89F10080B78B /* ViewController.swift */; };
 		684D5E37200D89F10080B78B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E35200D89F10080B78B /* Main.storyboard */; };
@@ -36,6 +38,10 @@
 
 /* Begin PBXFileReference section */
 		6816B6542014747F004E7D22 /* loclog.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = loclog.entitlements; sourceTree = "<group>"; };
+		6833628220B919FD0074BB56 /* libpq.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = libpq.framework; sourceTree = "<group>"; };
+		6833628520B91C470074BB56 /* loclog-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "loclog-Bridging-Header.h"; sourceTree = "<group>"; };
+		6833628620B91C470074BB56 /* bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bridge.h; sourceTree = "<group>"; };
+		6833628720B91C470074BB56 /* bridge.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bridge.c; sourceTree = "<group>"; };
 		684D5E2E200D89F10080B78B /* loclog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = loclog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		684D5E31200D89F10080B78B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		684D5E33200D89F10080B78B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -57,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6833628320B919FD0074BB56 /* libpq.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +91,7 @@
 				684D5E45200D89F10080B78B /* loclogTests */,
 				684D5E50200D89F10080B78B /* loclogUITests */,
 				684D5E2F200D89F10080B78B /* Products */,
+				6833628220B919FD0074BB56 /* libpq.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +116,9 @@
 				684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */,
 				684D5E3D200D89F10080B78B /* Info.plist */,
 				68BB273A2015742E00769962 /* LogEntry.swift */,
+				6833628620B91C470074BB56 /* bridge.h */,
+				6833628720B91C470074BB56 /* bridge.c */,
+				6833628520B91C470074BB56 /* loclog-Bridging-Header.h */,
 			);
 			path = loclog;
 			sourceTree = "<group>";
@@ -193,11 +204,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = "Garrett Mohammadioun";
 				TargetAttributes = {
 					684D5E2D200D89F10080B78B = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0930;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
@@ -274,6 +286,7 @@
 			files = (
 				684D5E34200D89F10080B78B /* ViewController.swift in Sources */,
 				684D5E32200D89F10080B78B /* AppDelegate.swift in Sources */,
+				6833628820B91C470074BB56 /* bridge.c in Sources */,
 				68BB273B2015742E00769962 /* LogEntry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -343,6 +356,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -350,6 +364,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -400,6 +415,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -407,6 +423,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -440,12 +457,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3XXQ6S76Z7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = loclog/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.self.loclog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "loclog/loclog-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -455,12 +479,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 3XXQ6S76Z7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = loclog/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.self.loclog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "loclog/loclog-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

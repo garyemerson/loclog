@@ -14,7 +14,6 @@ class LogEntry: NSObject, NSCoding {
     
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
     static let AppLogsURL = DocumentsDirectory.appendingPathComponent("app_logs")
-    static let LocationLogsURL = DocumentsDirectory.appendingPathComponent("location_logs")
     
     static func saveLogs(logs: [LogEntry], url: URL) {
         if !NSKeyedArchiver.archiveRootObject(logs, toFile: url.path) {
@@ -31,7 +30,8 @@ class LogEntry: NSObject, NSCoding {
         }
     }
     
-    static func appendLog(msg: String, url: URL) {
+    static func log(msg: String, url: URL) {
+        debugPrint(msg)
         if var logs = loadLogs(url: url) {
             logs.append(LogEntry(timeLogged: Date(), msg: msg))
             saveLogs(logs: logs, url: url)

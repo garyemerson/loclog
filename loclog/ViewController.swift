@@ -9,6 +9,7 @@
 import UIKit
 import CoreLocation
 
+
 struct PropertyKey {
     static let datetime = "datetime"
     static let msg = "msg"
@@ -21,20 +22,21 @@ enum LogType {
 
 class ViewController: UIViewController, CLLocationManagerDelegate, UITextViewDelegate {
     //MARK: Properties
-    @IBOutlet weak var locationMsg: UITextView!
+    @IBOutlet weak var regionMsg: UITextView!
     @IBOutlet weak var recentLogs: UITextView!
     @IBOutlet weak var currentLogLabel: UILabel!
     
-    var numUpdates = 0
     var locManager = CLLocationManager()
     var region: CLCircularRegion? = nil
-    var currLog = LogType.Location
+    var region2: CLCircularRegion? = nil
+    var region3: CLCircularRegion? = nil
+    var currLog = LogType.App
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         locManager.delegate = self
-        locationMsg.delegate = self
+        regionMsg.delegate = self
         
 //        locManager.requestWhenInUseAuthorization()
         locManager.requestAlwaysAuthorization()
@@ -57,19 +59,30 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextViewDel
 
     //MARK: Actions
     @IBAction func clearLogs(_ sender: UIButton) {
-        LogEntry.saveLogs(logs: [LogEntry](), url: LogEntry.LocationLogsURL)
         LogEntry.saveLogs(logs: [LogEntry](), url: LogEntry.AppLogsURL)
         reloadRecentLogView()
     }
     @IBAction func refresh(_ sender: UIButton) {
         if let r = region {
             locManager.requestState(for: r)
-            locationMsg.text = [
-                    String(format: "region center: %f, %f", r.center.latitude, r.center.longitude),
-                    String(format: "region radius: %f", r.radius)]
-                .joined(separator: "\n")
+            regionMsg.text = getRegionStr()
         }
         reloadRecentLogView()
+    }
+    func getRegionStr() -> String {
+        return [
+            "region \(region!.identifier)",
+            String(format: "center: %f, %f", (region?.center.latitude)!, (region?.center.longitude)!),
+            String(format: "radius: %f", (region?.radius)!),
+            "",
+            "region \(region2!.identifier)",
+            String(format: "center: %f, %f", (region2?.center.latitude)!, (region2?.center.longitude)!),
+            String(format: "radius: %f", (region2?.radius)!),
+            "",
+            "region \(region3!.identifier)",
+            String(format: "center: %f, %f", (region3?.center.latitude)!, (region3?.center.longitude)!),
+            String(format: "radius: %f", (region3?.radius)!)]
+        .joined(separator: "\n")
     }
     @IBAction func switchLogs(_ sender: UIButton) {
         if currLog == LogType.Location {
@@ -92,78 +105,140 @@ class ViewController: UIViewController, CLLocationManagerDelegate, UITextViewDel
     
     func reloadRecentLogView() {
         let maybeLogs: [LogEntry]?
-        if currLog == LogType.Location {
-            maybeLogs = LogEntry.loadLogs(url: LogEntry.LocationLogsURL)
-        } else {
+        if currLog == LogType.App {
             maybeLogs = LogEntry.loadLogs(url: LogEntry.AppLogsURL)
+        } else {
+            maybeLogs = []
         }
         
         if let logs = maybeLogs {
             let dateFmt = DateFormatter()
             dateFmt.locale = Locale(identifier: "en_US")
-            dateFmt.setLocalizedDateFormatFromTemplate("HH:mm:ss")
+            dateFmt.setLocalizedDateFormatFromTemplate("yyyy-MM-dd - HH:mm:ss")
             
             let recent: ArraySlice = logs.dropFirst(0)//max(0, logs.count - 12))
             let s = recent
-                .map({ dateFmt.string(from: $0.timeLogged) + " " + $0.msg })
+                .reversed()
+                .map({ "[\(dateFmt.string(from: $0.timeLogged))] \($0.msg)" })
                 .joined(separator: "\n")
             recentLogs.text = s
         }
     }
-    
+    func saveLocationsToDb(locatoins: [CLLocation]) {
+        LogEntry.log(msg: "saving \(locatoins.count) location(s) to db", url: LogEntry.AppLogsURL)
+        if (locatoins.count > 0) {
+//            regionMsg.text = "running query..."
+            
+            // TODO: perhaps batch dbs calls to something like 1000 locations a batch so a single query
+            // doesn't take very long. This minimize the harm done if a query gets cut off bc then hopefully
+            // at least some queries before it could finish.
+            DispatchQueue.global(qos: .background).async {
+                let query =
+                    "insert into locations (date,latitude,longitude,altitude,horizontal_accuracy,vertical_accuracy,course,speed,floor)\n" +
+                    "values\n" +
+                    locatoins.map({
+                        """
+                        ('\($0.timestamp)', \($0.coordinate.latitude), \($0.coordinate.longitude),
+                        \($0.altitude), \($0.horizontalAccuracy), \($0.verticalAccuracy), \($0.course),
+                        \($0.speed), \($0.floor?.description ?? "NULL"))
+                        """
+                    })
+                    .joined(separator: ",\n");
+
+                let result = exec_query(query).description
+                DispatchQueue.main.async {
+                    LogEntry.log(msg: "db save result is \(result)", url: LogEntry.AppLogsURL)
+                    self.reloadRecentLogView()
+                }
+            }
+        }
+    }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if !locations.isEmpty {
-            numUpdates += 1
-            debugPrint("received location update", numUpdates)
             let coord = locations[0].coordinate
-//            locationMsg.text = [
-//                String(format: "%f, %f", coord.latitude, coord.longitude),
-//                String(format: "(%f x %f)", locations[0].horizontalAccuracy, locations[0].verticalAccuracy),
-//                String(describing: Date())].joined(separator: "\n")
+            // locationMsg.text = [
+            //    String(format: "%f, %f", coord.latitude, coord.longitude),
+            //    String(format: "(%f x %f)", locations[0].horizontalAccuracy, locations[0].verticalAccuracy),
+            //    String(describing: Date())].joined(separator: "\n")
             
             region = CLCircularRegion(center: coord, radius: 100, identifier: "foobar")
-            locationMsg.text = [
-                String(format: "region center: %f, %f", region!.center.latitude, region!.center.longitude),
-                String(format: "region radius: %f", region!.radius)]
-                .joined(separator: "\n")
+            region2 = CLCircularRegion(center: coord, radius: 1000, identifier: "foobar2")
+            region3 = CLCircularRegion(center: coord, radius: 10000, identifier: "foobar3")
+            regionMsg.text = getRegionStr()
             locManager.startMonitoring(for: region!)
+            locManager.startMonitoring(for: region2!)
+            locManager.startMonitoring(for: region3!)
             
-            LogEntry.appendLog(msg: "added loc", url: LogEntry.LocationLogsURL)
+            // TODO: Mark log entries as "saved to db" only when successfully save. That way if
+            // there's a failure then we can retry all unsaved entries.
+            saveLocationsToDb(locatoins: locations)
             reloadRecentLogView()
         }
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        debugPrint("error: ", error.localizedDescription)
-        locationMsg.text = "error: " + error.localizedDescription
+        LogEntry.log(msg: "error: \(error.localizedDescription)", url: LogEntry.AppLogsURL)
+        regionMsg.text = "error: " + error.localizedDescription
+        reloadRecentLogView()
     }
     func locationManager(_ manager: CLLocationManager, didFinishDeferredUpdatesWithError error: Error?) {
-        debugPrint("defer error: ", error.debugDescription)
-        locationMsg.text = "error"
+        LogEntry.log(msg: "defer error: \(error.debugDescription)", url: LogEntry.AppLogsURL)
+        regionMsg.text = "error"
+        reloadRecentLogView()
     }
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        debugPrint("auth status is", status)
+        LogEntry.log(msg: "auth status is \(authToStr(status: status))", url: LogEntry.AppLogsURL)
         if status == CLAuthorizationStatus.authorizedAlways {
             locManager.requestLocation()
         }
+        reloadRecentLogView()
     }
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
-        debugPrint("monitor error: ", error.localizedDescription)
-        locationMsg.text = "error"
+        LogEntry.log(
+            msg: "monitor error for region \(region?.identifier ?? "<none>"): \(error.localizedDescription)",
+            url: LogEntry.AppLogsURL)
+        regionMsg.text = "error"
+        reloadRecentLogView()
     }
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        debugPrint("exited region")
-        LogEntry.appendLog(msg: "exited region", url: LogEntry.LocationLogsURL)
+        LogEntry.log(msg: "exited region \(region.identifier)", url: LogEntry.AppLogsURL)
         reloadRecentLogView()
         locManager.requestLocation()
     }
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        debugPrint("entered region")
-        LogEntry.appendLog(msg: "entered region", url: LogEntry.LocationLogsURL)
+        LogEntry.log(msg: "entered region \(region.identifier)", url: LogEntry.AppLogsURL)
         reloadRecentLogView()
     }
     func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
-        LogEntry.appendLog(msg: "region state is " + String(describing: state.rawValue), url: LogEntry.LocationLogsURL)
+        LogEntry.log(msg: "region \(region.identifier) state is \(stateToStr(state: state))", url: LogEntry.AppLogsURL)
         reloadRecentLogView()
+    }
+    func authToStr(status: CLAuthorizationStatus) -> String {
+        switch (status) {
+        case CLAuthorizationStatus.notDetermined:
+            return "notDetermined"
+            
+        case CLAuthorizationStatus.restricted:
+            return "restricted"
+            
+        case CLAuthorizationStatus.denied:
+            return "denied"
+            
+        case CLAuthorizationStatus.authorizedAlways:
+            return "authorizedAlways"
+            
+        case CLAuthorizationStatus.authorizedWhenInUse:
+            return "authorizedWhenInUse"
+        }
+    }
+    func stateToStr(state: CLRegionState) -> String {
+        switch (state) {
+        case CLRegionState.unknown:
+            return "unknown"
+        case CLRegionState.inside:
+            return "inside"
+        case CLRegionState.outside:
+            return "outside"
+        }
     }
 }
 
