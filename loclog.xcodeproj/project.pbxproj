@@ -16,6 +16,7 @@
 		684D5E3C200D89F10080B78B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */; };
 		684D5E47200D89F10080B78B /* loclogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E46200D89F10080B78B /* loclogTests.swift */; };
 		684D5E52200D89F10080B78B /* loclogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E51200D89F10080B78B /* loclogUITests.swift */; };
+		6868633120BB57D40077DB52 /* LocationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6868633020BB57D40077DB52 /* LocationDelegate.swift */; };
 		68BB273B2015742E00769962 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BB273A2015742E00769962 /* LogEntry.swift */; };
 /* End PBXBuildFile section */
 
@@ -55,6 +56,7 @@
 		684D5E4D200D89F10080B78B /* loclogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		684D5E51200D89F10080B78B /* loclogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loclogUITests.swift; sourceTree = "<group>"; };
 		684D5E53200D89F10080B78B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6868633020BB57D40077DB52 /* LocationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocationDelegate.swift; path = loclog/LocationDelegate.swift; sourceTree = "<group>"; };
 		68BB273A2015742E00769962 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,6 +89,7 @@
 		684D5E25200D89F10080B78B = {
 			isa = PBXGroup;
 			children = (
+				6868633020BB57D40077DB52 /* LocationDelegate.swift */,
 				684D5E30200D89F10080B78B /* loclog */,
 				684D5E45200D89F10080B78B /* loclogTests */,
 				684D5E50200D89F10080B78B /* loclogUITests */,
@@ -288,6 +291,7 @@
 				684D5E32200D89F10080B78B /* AppDelegate.swift in Sources */,
 				6833628820B91C470074BB56 /* bridge.c in Sources */,
 				68BB273B2015742E00769962 /* LogEntry.swift in Sources */,
+				6868633120BB57D40077DB52 /* LocationDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

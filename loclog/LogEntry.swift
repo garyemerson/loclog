@@ -8,11 +8,23 @@
 
 import Foundation
 
+public struct PropertyKey {
+    static let datetime = "datetime"
+    static let msg = "msg"
+}
+
+public enum LogType {
+    case Location
+    case App
+}
+
 class LogEntry: NSObject, NSCoding {
     var timeLogged: Date
     var msg: String
     
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
+    static let LastUploadUrl = DocumentsDirectory.appendingPathComponent("last_upload")
+    static let LocationLogsURL = DocumentsDirectory.appendingPathComponent("location_logs")
     static let AppLogsURL = DocumentsDirectory.appendingPathComponent("app_logs")
     
     static func saveLogs(logs: [LogEntry], url: URL) {
@@ -21,7 +33,7 @@ class LogEntry: NSObject, NSCoding {
         }
     }
     
-    static func loadLogs(url: URL) -> [LogEntry]? {
+    static func loadLogs(url: URL) -> [LogEntry] {
 //        return NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry]
         if let logs = NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry] {
             return logs
@@ -30,12 +42,21 @@ class LogEntry: NSObject, NSCoding {
         }
     }
     
+    static func log(msgs: [String], url: URL) {
+        for m in msgs {
+            debugPrint(m)
+        }
+
+        var logs = loadLogs(url: url)
+        logs.append(contentsOf: msgs.map({LogEntry(timeLogged: Date(), msg: $0)}))
+        saveLogs(logs: logs, url: url)
+    }
+    
     static func log(msg: String, url: URL) {
         debugPrint(msg)
-        if var logs = loadLogs(url: url) {
-            logs.append(LogEntry(timeLogged: Date(), msg: msg))
-            saveLogs(logs: logs, url: url)
-        }
+        var logs = loadLogs(url: url)
+        logs.append(LogEntry(timeLogged: Date(), msg: msg))
+        saveLogs(logs: logs, url: url)
     }
     
     func encode(with aCoder: NSCoder) {
