@@ -7,16 +7,43 @@
 //
 
 import UIKit
+import CoreLocation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    var locManager: CLLocationManager = CLLocationManager()
+    var locDelegate = LocationDelegate()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         LogEntry.log(msg: "app launched", url: LogEntry.AppLogsURL)
+        
+        locManager.delegate = locDelegate
+        if CLLocationManager.authorizationStatus() == CLAuthorizationStatus.authorizedAlways {
+            LogEntry.log(msg: "starting monitoring of significant changes", url: LogEntry.AppLogsURL)
+            locManager.startMonitoringSignificantLocationChanges()
+        } else {
+            locManager.requestAlwaysAuthorization()
+        }
+        //locManager.allowDeferredLocationUpdates(untilTraveled: CLLocationDistanceMax, timeout: 2)
+        locManager.allowsBackgroundLocationUpdates = true
+        locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locManager.distanceFilter = kCLLocationAccuracyHundredMeters
+                
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("requestLocation"),
+            object: nil,
+            queue: OperationQueue.main) { (note) in
+                self.locManager.requestLocation()
+        }
+        
         return true
+    }
+    
+    func locationUpdateRequested(notification: Notification) {
+        self.locManager.requestLocation()
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

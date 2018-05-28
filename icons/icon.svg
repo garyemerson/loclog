@@ -1,0 +1,29 @@
+<!-- from: https://www.flaticon.com/free-icon/cell_839056 -->
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512; background-color: blue;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="pattern-0" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse" viewBox="0 0 100 100">
+      <rect x="0" y="0" width="50" height="100" style="fill: black;"/>
+    </pattern>
+    <radialGradient id="gradient-5" gradientUnits="userSpaceOnUse" cx="254.782" cy="255.01" r="256" gradientTransform="matrix(1.286553, 0.017091, -0.018126, 1.364556, -68.386134, -97.320005)" spreadMethod="pad">
+      <stop offset="0" style="stop-color: rgba(163, 163, 163, 1)"/>
+      <stop offset="1" style="stop-color: rgb(112, 112, 112);"/>
+    </radialGradient>
+    <radialGradient id="gradient-7" gradientUnits="userSpaceOnUse" cx="374.81" cy="137.19" r="137.19" gradientTransform="matrix(0.756507, 0, 0, 0.768995, 60.735488, 70.325661)">
+      <stop offset="0" style="stop-color: rgba(255, 190, 110, 1)"/>
+      <stop offset="1" style="stop-color: rgba(255, 144, 8, 1)"/>
+    </radialGradient>
+    <radialGradient id="gradient-8" gradientUnits="userSpaceOnUse" cx="311.14" cy="374.81" r="137.19" gradientTransform="matrix(0.756508, 0, 0, 0.768994, 60.735732, 70.325734)">
+      <stop offset="0" style="stop-color: rgba(255, 221, 86, 1)"/>
+      <stop offset="1" style="stop-color: rgba(239, 191, 0, 1)"/>
+    </radialGradient>
+    <radialGradient id="gradient-9" gradientUnits="userSpaceOnUse" cx="137.19" cy="200.86" r="137.19" gradientTransform="matrix(0.756508, 0, 0, 0.768995, 60.735748, 70.325689)">
+      <stop offset="0" style="stop-color: rgba(255, 244, 188, 1)"/>
+      <stop offset="1" style="stop-color: rgba(255, 227, 86, 1)"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" style="fill: url(#gradient-5);"/>
+  <polygon points="372.09 281.323 448.067 204.092 420.258 98.594 316.472 70.326 240.497 147.556 253.163 268.446" style="fill: url(#gradient-7);"/>
+  <polygon points="372.09 281.323 268.305 253.054 211.042 267.188 192.33 330.285 192.33 330.285 220.139 435.783 323.924 464.051 399.9 386.821" style="fill: url(#gradient-8);"/>
+  <polygon points="268.305 253.054 240.497 147.556 136.711 119.288 60.735 196.518 88.544 302.016 192.33 330.285" style="fill: url(#gradient-9);"/>
+</svg>

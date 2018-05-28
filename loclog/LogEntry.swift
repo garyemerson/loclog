@@ -29,8 +29,9 @@ class LogEntry: NSObject, NSCoding {
     
     static func saveLogs(logs: [LogEntry], url: URL) {
         if !NSKeyedArchiver.archiveRootObject(logs, toFile: url.path) {
-            debugPrint("Failed to save logs")
+            print("Failed to save logs")
         }
+        sendNotification(url: url)
     }
     
     static func loadLogs(url: URL) -> [LogEntry] {
@@ -44,19 +45,33 @@ class LogEntry: NSObject, NSCoding {
     
     static func log(msgs: [String], url: URL) {
         for m in msgs {
-            debugPrint(m)
+            print(m)
         }
 
         var logs = loadLogs(url: url)
         logs.append(contentsOf: msgs.map({LogEntry(timeLogged: Date(), msg: $0)}))
         saveLogs(logs: logs, url: url)
+        sendNotification(url: url)
     }
     
     static func log(msg: String, url: URL) {
-        debugPrint(msg)
+        print(msg)
         var logs = loadLogs(url: url)
         logs.append(LogEntry(timeLogged: Date(), msg: msg))
         saveLogs(logs: logs, url: url)
+        sendNotification(url: url)
+    }
+    
+    static func sendNotification(url: URL) {
+        var maybeNoti: String? = nil
+        if url == LogEntry.AppLogsURL {
+            maybeNoti = "appLogUpdated"
+        } else if url == LogEntry.LocationLogsURL {
+            maybeNoti = "locationLogUpdated"
+        }
+        if let noti = maybeNoti {
+            NotificationCenter.default.post(name: NSNotification.Name(noti), object: nil)
+        }
     }
     
     func encode(with aCoder: NSCoder) {
@@ -72,11 +87,11 @@ class LogEntry: NSObject, NSCoding {
     required convenience init?(coder aDecoder: NSCoder) {
         // The name is required. If we cannot decode a name string, the initializer should fail.
         guard let datetime = aDecoder.decodeObject(forKey: PropertyKey.datetime) as? Date else {
-            debugPrint("Unable to decode the timeLogged for a LogEntry object.")
+            print("Unable to decode the timeLogged for a LogEntry object.")
             return nil
         }
         guard let msg = aDecoder.decodeObject(forKey: PropertyKey.msg) as? String else {
-            debugPrint("Unable to decode the msg for a LogEntry object.")
+            print("Unable to decode the msg for a LogEntry object.")
             return nil
         }
         
@@ -91,7 +106,7 @@ class LogEntry2<T>: NSObject, NSCoding {
     
     static func saveLogs(logs: [LogEntry], url: URL) {
         if !NSKeyedArchiver.archiveRootObject(logs, toFile: url.path) {
-            debugPrint("Failed to save logs")
+            print("Failed to save logs")
         }
     }
     
@@ -124,11 +139,11 @@ class LogEntry2<T>: NSObject, NSCoding {
     required convenience init?(coder aDecoder: NSCoder) {
         // The name is required. If we cannot decode a name string, the initializer should fail.
         guard let datetime = aDecoder.decodeObject(forKey: PropertyKey.datetime) as? Date else {
-            debugPrint("Unable to decode the timeLogged for a LogEntry object.")
+            print("Unable to decode the timeLogged for a LogEntry object.")
             return nil
         }
         guard let data = aDecoder.decodeObject(forKey: PropertyKey.msg) as? T else {
-            debugPrint("Unable to decode the msg for a LogEntry object.")
+            print("Unable to decode the msg for a LogEntry object.")
             return nil
         }
         
