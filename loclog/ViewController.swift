@@ -23,6 +23,10 @@ class ViewController: UIViewController, UITextViewDelegate {
         // Do any additional setup after loading the view, typically from a nib.
         regionMsg.delegate = self
         regionMsg.text = getRegionStr(regions: Array(locManager.monitoredRegions))
+//        button.HorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+        
+        
+
         
         NotificationCenter.default.addObserver(
             forName: NSNotification.Name("appLogUpdated"),
@@ -70,6 +74,8 @@ class ViewController: UIViewController, UITextViewDelegate {
     @IBAction func refresh(_ sender: UIButton) {
         regionMsg.text = getRegionStr(regions: Array(locManager.monitoredRegions))
         NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
+//        LocationDelegate().maybeUploadVisitsToDb()
+//        LocationDelegate().maybeUploadLocationsToDb()
         maybeReloadRecentLogView()
     }
     
@@ -87,21 +93,28 @@ class ViewController: UIViewController, UITextViewDelegate {
     }
     
     @IBAction func switchLogs(_ sender: UIButton) {
-        if currLog == LogType.Location {
+        if currLog == LogType.App {
+            currLog = LogType.Location
+            maybeReloadRecentLogView()
+            sender.setTitle("View Visit Logs", for: UIControlState.normal)
+            sender.sizeToFit()
+//            sender.frame.origin.x = sender.frame.origin.x + 31
+            currentLogLabel.text = "Location Logs"
+        } else if currLog == LogType.Location {
+            currLog = LogType.Visit
+            maybeReloadRecentLogView()
+            sender.setTitle("View App Logs", for: UIControlState.normal)
+            sender.sizeToFit()
+//            sender.frame.origin.x = sender.frame.origin.x + 31
+            currentLogLabel.text = "Visit Logs"
+        } else {
             currLog = LogType.App
             maybeReloadRecentLogView()
             sender.contentMode = UIViewContentMode.right
             sender.setTitle("View Location Logs", for: UIControlState.normal)
             sender.sizeToFit()
-            sender.frame.origin.x = sender.frame.origin.x - 31
+//            sender.frame.origin.x = sender.frame.origin.x - 31
             currentLogLabel.text = "App Logs"
-        } else {
-            currLog = LogType.Location
-            maybeReloadRecentLogView()
-            sender.setTitle("View App Logs", for: UIControlState.normal)
-            sender.sizeToFit()
-            sender.frame.origin.x = sender.frame.origin.x + 31
-            currentLogLabel.text = "Location Logs"
         }
     }
 
@@ -110,8 +123,10 @@ class ViewController: UIViewController, UITextViewDelegate {
             let maybeLogs: [LogEntry]?
             if currLog == LogType.App {
                 maybeLogs = LogEntry.loadLogs(url: LogEntry.AppLogsURL)
-            } else {
+            } else if currLog == LogType.Location {
                 maybeLogs = LogEntry.loadLogs(url: LogEntry.LocationLogsURL)
+            } else {
+                maybeLogs = LogEntry.loadLogs(url: LogEntry.VisitLogsURL)
             }
             
             if let logs = maybeLogs {
@@ -128,12 +143,12 @@ class ViewController: UIViewController, UITextViewDelegate {
                     .sorted(by: { $0.key > $1.key })
                     .map({
                         "--\(dateFmt.string(from: $0.key))--\n" +
-                            $0.value
-                                .sorted(by: { $0.timeLogged > $1.timeLogged })
-                                .map({
-                                    "[\(dateFmt2.string(from: $0.timeLogged))] \($0.msg)"
-                                })
-                                .joined(separator: "\n")
+                        $0.value
+                            .sorted(by: { $0.timeLogged > $1.timeLogged })
+                            .map({
+                                "[\(dateFmt2.string(from: $0.timeLogged))] \($0.msg)"
+                            })
+                            .joined(separator: "\n")
                     })
                     .joined(separator: "\n")
                 recentLogs.text = s

@@ -12,7 +12,7 @@ import CoreLocation
 
 class LocationDelegate: NSObject, CLLocationManagerDelegate {
     func maybeUploadLocationsToDb() {
-        let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
+        let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastLocationUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
         if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
             let locations = LogEntry.loadLogs(url: LogEntry.LocationLogsURL)
             LogEntry.log(msg: "attempting upload of \(locations.count) location(s) to db", url: LogEntry.AppLogsURL)
@@ -25,25 +25,57 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                 DispatchQueue.global(qos: .background).async {
                     let query =
                         "insert into locations (date,latitude,longitude,altitude,horizontal_accuracy,vertical_accuracy,course,speed,floor)\n" +
-                            "values\n" +
-                            locations
-                                .map({$0.msg})
-                                .joined(separator: ",\n");
+                        "values\n" +
+                        locations.map({$0.msg}).joined(separator: ",\n");
                     
-                    let result = exec_query(query)
-                    LogEntry.saveLogs(logs: [], url: LogEntry.LocationLogsURL)
+                    let result = String(cString: exec_query(query))
                     DispatchQueue.main.async {
-                        if result == 0 {
+                        if result == "" {
                             LogEntry.log(msg: "db save succeeded", url: LogEntry.AppLogsURL)
-                            LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastUploadUrl)
+                            LogEntry.saveLogs(logs: [], url: LogEntry.LocationLogsURL)
+                            LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastLocationUploadUrl)
                         } else {
-                            LogEntry.log(msg: "db save failed with \(result.description)", url: LogEntry.AppLogsURL)
+                            LogEntry.log(msg: "db location upload failed: \(result)", url: LogEntry.AppLogsURL)
                         }
                     }
                 }
             }
         } else {
-            LogEntry.log(msg: "Recent upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping", url: LogEntry.AppLogsURL)
+            LogEntry.log(msg: "Recent location upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping", url: LogEntry.AppLogsURL)
+        }
+    }
+    
+    func maybeUploadVisitsToDb() {
+        let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastVisitUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
+        if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
+            let visits = LogEntry.loadLogs(url: LogEntry.VisitLogsURL)
+            LogEntry.log(msg: "attempting upload of \(visits.count) visits(s) to db", url: LogEntry.AppLogsURL)
+            if (!visits.isEmpty) {
+                // regionMsg.text = "running query..."
+                
+                // TODO: perhaps batch dbs calls to something like 1000 locations a batch so a single query
+                // doesn't take very long. This minimize the harm done if a query gets cut off bc then hopefully
+                // at least some queries before it could finish.
+                DispatchQueue.global(qos: .background).async {
+                    let query =
+                        "insert into visits (arrival,departure,latitude,longitude,horizontal_accuracy)\n" +
+                        "values\n" +
+                        visits.map({$0.msg}).joined(separator: ",\n");
+                    
+                    let result = String(cString: exec_query(query))
+                    DispatchQueue.main.async {
+                        if result == "" {
+                            LogEntry.log(msg: "db save succeeded", url: LogEntry.AppLogsURL)
+                            LogEntry.saveLogs(logs: [], url: LogEntry.VisitLogsURL)
+                            LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastVisitUploadUrl)
+                        } else {
+                            LogEntry.log(msg: "db visit upload failed: \(result)", url: LogEntry.AppLogsURL)
+                        }
+                    }
+                }
+            }
+        } else {
+            LogEntry.log(msg: "Recent visit upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping", url: LogEntry.AppLogsURL)
         }
     }
     
@@ -56,8 +88,17 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
             """
     }
     
+    func visitToStr(visit: CLVisit) -> String {
+        return
+            """
+            ('\(visit.arrivalDate)', '\(visit.departureDate)', \(visit.coordinate.latitude),
+            \(visit.coordinate.longitude), \(visit.horizontalAccuracy)
+            """
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if !locations.isEmpty {
+            LogEntry.log(msg: "received location update", url: LogEntry.AppLogsURL)
             LogEntry.log(
                 msgs: locations.map(locationToStr),
                 url: LogEntry.LocationLogsURL)
@@ -80,6 +121,11 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
         }
     }
     
+    func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
+        LogEntry.log(msg: "received visit update", url: LogEntry.AppLogsURL)
+        LogEntry.log(msg: visitToStr(visit: visit), url: LogEntry.VisitLogsURL)
+        maybeUploadVisitsToDb()
+    }
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
         LogEntry.log(msg: "location updates paused", url: LogEntry.AppLogsURL)
     }
@@ -95,8 +141,15 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         LogEntry.log(msg: "auth status is \(authToStr(status: status))", url: LogEntry.AppLogsURL)
         if status == CLAuthorizationStatus.authorizedAlways {
-            LogEntry.log(msg: "starting monitoring of significant changes", url: LogEntry.AppLogsURL)
-            manager.startMonitoringSignificantLocationChanges()
+            LogEntry.log(msg: "starting monitoring of visits", url: LogEntry.AppLogsURL)
+            manager.startMonitoringVisits()
+            
+            if CLLocationManager.significantLocationChangeMonitoringAvailable() {
+                LogEntry.log(msg: "starting monitoring of significant location changes", url: LogEntry.AppLogsURL)
+                manager.startMonitoringSignificantLocationChanges()
+            } else {
+                LogEntry.log(msg: "significant locations changes API not available", url: LogEntry.AppLogsURL)
+            }
         }
     }
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {

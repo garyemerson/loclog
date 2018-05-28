@@ -16,6 +16,7 @@ public struct PropertyKey {
 public enum LogType {
     case Location
     case App
+    case Visit
 }
 
 class LogEntry: NSObject, NSCoding {
@@ -23,8 +24,10 @@ class LogEntry: NSObject, NSCoding {
     var msg: String
     
     static let DocumentsDirectory = FileManager().urls(for: .documentDirectory, in: .userDomainMask).first!
-    static let LastUploadUrl = DocumentsDirectory.appendingPathComponent("last_upload")
+    static let LastLocationUploadUrl = DocumentsDirectory.appendingPathComponent("last_location_upload")
+    static let LastVisitUploadUrl = DocumentsDirectory.appendingPathComponent("last_visit_upload")
     static let LocationLogsURL = DocumentsDirectory.appendingPathComponent("location_logs")
+    static let VisitLogsURL = DocumentsDirectory.appendingPathComponent("visit_logs")
     static let AppLogsURL = DocumentsDirectory.appendingPathComponent("app_logs")
     
     static func saveLogs(logs: [LogEntry], url: URL) {

@@ -110,9 +110,9 @@
 		684D5E30200D89F10080B78B /* loclog */ = {
 			isa = PBXGroup;
 			children = (
-				6868633020BB57D40077DB52 /* LocationDelegate.swift */,
 				6816B6542014747F004E7D22 /* loclog.entitlements */,
 				684D5E31200D89F10080B78B /* AppDelegate.swift */,
+				6868633020BB57D40077DB52 /* LocationDelegate.swift */,
 				684D5E33200D89F10080B78B /* ViewController.swift */,
 				684D5E35200D89F10080B78B /* Main.storyboard */,
 				684D5E38200D89F10080B78B /* Assets.xcassets */,

@@ -13,6 +13,6 @@
 #include <stdlib.h>
 #include "../libpq.framework/Versions/A/Headers/libpq-fe.h"
 
-int exec_query(const char *query);
+char *exec_query(const char *query);
 
 #endif /* bridge_h */

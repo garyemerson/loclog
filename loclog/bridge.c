@@ -6,21 +6,35 @@
 //  Copyright © 2018 Garrett Mohammadioun. All rights reserved.
 //
 
+#include <string.h>
+#include <stdio.h>
 #include "bridge.h"
 
-int exec_query(const char *query) {
+char *exec_query(const char *query) {
     PGconn *connection = PQconnectdb("postgres://Garrett@garspace.com/Garrett");
     if (PQstatus(connection) != CONNECTION_OK) {
-        return -1;
+        char *error = PQerrorMessage(connection);
+        char *msg = malloc(strlen(error) + 1);
+        strcpy(msg, error);
+        PQfinish(connection);
+        return msg;
     }
     
     PGresult *result = PQexec(connection, query);
     if (PQresultStatus(result) != PGRES_COMMAND_OK) {
-        return -2;
+        //printf("query failed with error: %s", PQresultErrorMessage(result));
+        char *error = PQresultErrorMessage(result);
+        char *msg = malloc(strlen(error) + 1);
+        strcpy(msg, error);
+        PQclear(result);
+        PQfinish(connection);
+        return msg;
     }
     
     PQclear(result);
     PQfinish(connection);
     
-    return 0;
+    char *msg = malloc(1);
+    msg[0] = '\0';
+    return msg;
 }

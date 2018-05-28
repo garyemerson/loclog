@@ -18,12 +18,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        LogEntry.log(msg: "app launched", url: LogEntry.AppLogsURL)
+        LogEntry.log(
+            msg: "app launched with options: " + (launchOptions == nil ? "<none>" : launchOptions!.map({$0.key.rawValue}).joined(separator: ",")),
+            url: LogEntry.AppLogsURL)
         
         locManager.delegate = locDelegate
         if CLLocationManager.authorizationStatus() == CLAuthorizationStatus.authorizedAlways {
-            LogEntry.log(msg: "starting monitoring of significant changes", url: LogEntry.AppLogsURL)
-            locManager.startMonitoringSignificantLocationChanges()
+            LogEntry.log(msg: "starting monitoring of visits", url: LogEntry.AppLogsURL)
+            locManager.startMonitoringVisits()
+
+            if CLLocationManager.significantLocationChangeMonitoringAvailable() {
+                LogEntry.log(msg: "starting monitoring of significant location changes", url: LogEntry.AppLogsURL)
+                locManager.startMonitoringSignificantLocationChanges()
+            } else {
+                LogEntry.log(msg: "significant locations changes API not available", url: LogEntry.AppLogsURL)
+            }
         } else {
             locManager.requestAlwaysAuthorization()
         }
