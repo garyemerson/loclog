@@ -31,7 +31,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                     let result = String(cString: exec_query(query))
                     DispatchQueue.main.async {
                         if result == "" {
-                            LogEntry.log(msg: "db save succeeded", url: LogEntry.AppLogsURL)
+                            LogEntry.log(msg: "db location upload succeeded", url: LogEntry.AppLogsURL)
                             LogEntry.saveLogs(logs: [], url: LogEntry.LocationLogsURL)
                             LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastLocationUploadUrl)
                         } else {
@@ -41,7 +41,9 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                 }
             }
         } else {
-            LogEntry.log(msg: "Recent location upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping", url: LogEntry.AppLogsURL)
+            LogEntry.log(
+                msg: "Recent location upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
+                url: LogEntry.AppLogsURL)
         }
     }
     
@@ -49,7 +51,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
         let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastVisitUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
         if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
             let visits = LogEntry.loadLogs(url: LogEntry.VisitLogsURL)
-            LogEntry.log(msg: "attempting upload of \(visits.count) visits(s) to db", url: LogEntry.AppLogsURL)
+            LogEntry.log(msg: "attempting upload of \(visits.count) visit(s) to db", url: LogEntry.AppLogsURL)
             if (!visits.isEmpty) {
                 // regionMsg.text = "running query..."
                 
@@ -65,7 +67,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                     let result = String(cString: exec_query(query))
                     DispatchQueue.main.async {
                         if result == "" {
-                            LogEntry.log(msg: "db save succeeded", url: LogEntry.AppLogsURL)
+                            LogEntry.log(msg: "db visit upload succeeded", url: LogEntry.AppLogsURL)
                             LogEntry.saveLogs(logs: [], url: LogEntry.VisitLogsURL)
                             LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastVisitUploadUrl)
                         } else {
@@ -75,7 +77,9 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                 }
             }
         } else {
-            LogEntry.log(msg: "Recent visit upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping", url: LogEntry.AppLogsURL)
+            LogEntry.log(
+                msg: "Recent visit upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
+                url: LogEntry.AppLogsURL)
         }
     }
     
@@ -89,10 +93,16 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     }
     
     func visitToStr(visit: CLVisit) -> String {
+        let arrival = visit.arrivalDate == NSDate.distantPast ?
+            "NULL" :
+            "'\(visit.arrivalDate)'"
+        let departure = visit.departureDate == NSDate.distantFuture ?
+            "NULL" :
+            "'\(visit.departureDate)'"
         return
             """
-            ('\(visit.arrivalDate)', '\(visit.departureDate)', \(visit.coordinate.latitude),
-            \(visit.coordinate.longitude), \(visit.horizontalAccuracy)
+            (\(arrival), \(departure), \(visit.coordinate.latitude), \(visit.coordinate.longitude),
+            \(visit.horizontalAccuracy))
             """
     }
     

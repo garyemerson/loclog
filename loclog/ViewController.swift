@@ -23,10 +23,6 @@ class ViewController: UIViewController, UITextViewDelegate {
         // Do any additional setup after loading the view, typically from a nib.
         regionMsg.delegate = self
         regionMsg.text = getRegionStr(regions: Array(locManager.monitoredRegions))
-//        button.HorizontalAlignment = UIControlContentHorizontalAlignment.Right;
-        
-        
-
         
         NotificationCenter.default.addObserver(
             forName: NSNotification.Name("appLogUpdated"),
@@ -73,9 +69,9 @@ class ViewController: UIViewController, UITextViewDelegate {
     
     @IBAction func refresh(_ sender: UIButton) {
         regionMsg.text = getRegionStr(regions: Array(locManager.monitoredRegions))
-        NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
-//        LocationDelegate().maybeUploadVisitsToDb()
-//        LocationDelegate().maybeUploadLocationsToDb()
+//        NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
+        LocationDelegate().maybeUploadVisitsToDb()
+        LocationDelegate().maybeUploadLocationsToDb()
         maybeReloadRecentLogView()
     }
     
