@@ -70,8 +70,8 @@ class ViewController: UIViewController, UITextViewDelegate {
     @IBAction func refresh(_ sender: UIButton) {
         regionMsg.text = getRegionStr(regions: Array(locManager.monitoredRegions))
 //        NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
-        LocationDelegate().maybeUploadVisitsToDb()
-        LocationDelegate().maybeUploadLocationsToDb()
+        LocationDelegate().maybeUpload(dataType: "visits")
+        LocationDelegate().maybeUpload(dataType: "locations")
         maybeReloadRecentLogView()
     }
     

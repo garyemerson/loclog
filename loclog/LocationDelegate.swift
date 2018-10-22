@@ -11,98 +11,79 @@ import CoreLocation
 
 
 class LocationDelegate: NSObject, CLLocationManagerDelegate {
-    func maybeUploadLocationsToDb() {
-        let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastLocationUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
+   func maybeUpload(dataType: String) {
+        let logUrl = dataType == "visits" ? LogEntry.VisitLogsURL : LogEntry.LocationLogsURL
+        let lastUploadUrl = dataType == "visits" ? LogEntry.LastVisitUploadUrl : LogEntry.LastLocationUploadUrl
+        
+        let lastUpdate = LogEntry.loadLogs(url: lastUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
         if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
-            let locations = LogEntry.loadLogs(url: LogEntry.LocationLogsURL)
-            LogEntry.log(msg: "attempting upload of \(locations.count) location(s) to db", url: LogEntry.AppLogsURL)
-            if (!locations.isEmpty) {
-                // regionMsg.text = "running query..."
+            let entities = LogEntry.loadLogs(url: logUrl)
+            if (!entities.isEmpty) {
+                LogEntry.log(msg: "attempting upload of \(entities.count) \(dataType) to db", url: LogEntry.AppLogsURL)
+
+                var request = URLRequest(url: URL(string: "http://unkdir.com/metrics/api/upload_locations")!)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 
-                // TODO: perhaps batch dbs calls to something like 1000 locations a batch so a single query
-                // doesn't take very long. This minimize the harm done if a query gets cut off bc then hopefully
-                // at least some queries before it could finish.
-                DispatchQueue.global(qos: .background).async {
-                    let query =
-                        "insert into locations (date,latitude,longitude,altitude,horizontal_accuracy,vertical_accuracy,course,speed,floor)\n" +
-                        "values\n" +
-                        locations.map({$0.msg}).joined(separator: ",\n");
-                    
-                    let result = String(cString: exec_query(query))
-                    DispatchQueue.main.async {
-                        if result == "" {
-                            LogEntry.log(msg: "db location upload succeeded", url: LogEntry.AppLogsURL)
-                            LogEntry.saveLogs(logs: [], url: LogEntry.LocationLogsURL)
-                            LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastLocationUploadUrl)
-                        } else {
-                            LogEntry.log(msg: "db location upload failed: \(result)", url: LogEntry.AppLogsURL)
-                        }
+                let s = "[" + entities.map({$0.msg}).joined(separator: ",") + "]"
+                let data = s.data(using: .utf8)
+                let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+                    if let error = error {
+                        LogEntry.log(msg: "\(dataType) upload failed: \(error)", url: LogEntry.AppLogsURL)
+                        return
                     }
+                    guard let r = response as? HTTPURLResponse else {
+                        LogEntry.log(
+                            msg: "failed to cast to HTTPURLResponse attempting to upload \(dataType) data",
+                            url: LogEntry.AppLogsURL)
+                        return
+                    }
+                    if r.statusCode != 200 {
+                        let body = String(data: data ?? Data(), encoding: .utf8) ?? String()
+                        LogEntry.log(msg: "\(dataType) upload failed with \(r.statusCode): \(body)", url: LogEntry.AppLogsURL)
+                        return
+                    }
+                    LogEntry.log(msg: "\(dataType) upload succeeded", url: LogEntry.AppLogsURL)
+                    LogEntry.saveLogs(logs: [], url: logUrl)
+                    LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: lastUploadUrl)
                 }
+                task.resume()
             }
         } else {
             LogEntry.log(
-                msg: "Recent location upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
+                msg: "Recent \(dataType) upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
                 url: LogEntry.AppLogsURL)
         }
     }
-    
-    func maybeUploadVisitsToDb() {
-        let lastUpdate = LogEntry.loadLogs(url: LogEntry.LastVisitUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
-        if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
-            let visits = LogEntry.loadLogs(url: LogEntry.VisitLogsURL)
-            LogEntry.log(msg: "attempting upload of \(visits.count) visit(s) to db", url: LogEntry.AppLogsURL)
-            if (!visits.isEmpty) {
-                // regionMsg.text = "running query..."
-                
-                // TODO: perhaps batch dbs calls to something like 1000 locations a batch so a single query
-                // doesn't take very long. This minimize the harm done if a query gets cut off bc then hopefully
-                // at least some queries before it could finish.
-                DispatchQueue.global(qos: .background).async {
-                    let query =
-                        "insert into visits (arrival,departure,latitude,longitude,horizontal_accuracy)\n" +
-                        "values\n" +
-                        visits.map({$0.msg}).joined(separator: ",\n");
-                    
-                    let result = String(cString: exec_query(query))
-                    DispatchQueue.main.async {
-                        if result == "" {
-                            LogEntry.log(msg: "db visit upload succeeded", url: LogEntry.AppLogsURL)
-                            LogEntry.saveLogs(logs: [], url: LogEntry.VisitLogsURL)
-                            LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: LogEntry.LastVisitUploadUrl)
-                        } else {
-                            LogEntry.log(msg: "db visit upload failed: \(result)", url: LogEntry.AppLogsURL)
-                        }
-                    }
-                }
-            }
-        } else {
-            LogEntry.log(
-                msg: "Recent visit upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
-                url: LogEntry.AppLogsURL)
-        }
-    }
-    
-    func locationToStr(location: CLLocation) -> String {
-        return
-            """
-            ('\(location.timestamp)', \(location.coordinate.latitude), \(location.coordinate.longitude),
-            \(location.altitude), \(location.horizontalAccuracy), \(location.verticalAccuracy), \(location.course),
-            \(location.speed), \(location.floor?.description ?? "NULL"))
+
+    func locationToJson(location: CLLocation) -> String {
+        return """
+            {"date": "\(location.timestamp)",
+            "latitude": \(location.coordinate.latitude),
+            "longitude": \(location.coordinate.longitude),
+            "altitude": \(location.altitude),
+            "horizontal_accuracy": \(location.horizontalAccuracy),
+            "vertical_accuracy": \(location.verticalAccuracy),
+            "course": \(location.course),
+            "speed": \(location.speed),
+            "floor": \(location.floor?.description ?? "null")}
             """
     }
     
-    func visitToStr(visit: CLVisit) -> String {
+    func visitToJson(visit: CLVisit) -> String {
         let arrival = visit.arrivalDate == NSDate.distantPast ?
-            "NULL" :
+            "null" :
             "'\(visit.arrivalDate)'"
         let departure = visit.departureDate == NSDate.distantFuture ?
-            "NULL" :
+            "null" :
             "'\(visit.departureDate)'"
-        return
-            """
-            (\(arrival), \(departure), \(visit.coordinate.latitude), \(visit.coordinate.longitude),
-            \(visit.horizontalAccuracy))
+
+        return """
+            {"arrival": "\(arrival)",
+            "departure": "\(departure)",
+            "latitude": \(visit.coordinate.latitude),
+            "longitude": \(visit.coordinate.longitude),
+            "horizontal_accuracy": \(visit.horizontalAccuracy)}
             """
     }
     
@@ -110,7 +91,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
         if !locations.isEmpty {
             LogEntry.log(msg: "received location update", url: LogEntry.AppLogsURL)
             LogEntry.log(
-                msgs: locations.map(locationToStr),
+                msgs: locations.map(locationToJson),
                 url: LogEntry.LocationLogsURL)
             
             // let coord = locations.max(by: { $0.timestamp < $1.timestamp })!.coordinate
@@ -125,16 +106,14 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
             // manager.startMonitoring(for: region3)
             // manager.startMonitoring(for: region4)
             
-            // TODO: Mark log entries as "saved to db" only when successfully save. That way if
-            // there's a failure then we can retry all unsaved entries.
-            maybeUploadLocationsToDb()
+            maybeUpload(dataType: "locations")
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
         LogEntry.log(msg: "received visit update", url: LogEntry.AppLogsURL)
-        LogEntry.log(msg: visitToStr(visit: visit), url: LogEntry.VisitLogsURL)
-        maybeUploadVisitsToDb()
+        LogEntry.log(msg: visitToJson(visit: visit), url: LogEntry.VisitLogsURL)
+        maybeUpload(dataType: "visits")
     }
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
         LogEntry.log(msg: "location updates paused", url: LogEntry.AppLogsURL)
