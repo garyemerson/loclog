@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         LogEntry.log(
-            msg: "app launched with options: " + (launchOptions == nil ? "<none>" : launchOptions!.map({$0.key.rawValue}).joined(separator: ",")),
+            msg: "app launched with options: " + (launchOptions?.map({$0.key.rawValue}).joined(separator: ",") ?? "<none>"),
             url: LogEntry.AppLogsURL)
         
         locManager.delegate = locDelegate

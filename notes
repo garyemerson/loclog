@@ -1,5 +1,8 @@
 TODO
 ----
-* switch to using http api
-* button to record current location and show lat, lon, and altitude
 * fix layout of buttons, perhaps replace with 3d touch button and dropdown
+    * maybe when using dropdown as options are selected the view eagerly changes in the background
+* button to record current location and show lat, lon, and altitude
+* instead of list of json show list of location names similar to how the frequent locations page in Settings displays
+* for logs show only minute markers and make side swipe to reveal full datetime like in messages app
+* allow a map preview of locations/visits that have been saved

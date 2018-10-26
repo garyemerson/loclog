@@ -17,15 +17,16 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
         
         let lastUpdate = LogEntry.loadLogs(url: lastUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
         if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
-            let entities = LogEntry.loadLogs(url: logUrl)
-            if (!entities.isEmpty) {
-                LogEntry.log(msg: "attempting upload of \(entities.count) \(dataType) to db", url: LogEntry.AppLogsURL)
+            let logs = LogEntry.loadLogs(url: logUrl)
+            if (!logs.isEmpty) {
+                LogEntry.log(msg: "attempting upload of \(logs.count) \(dataType) to db", url: LogEntry.AppLogsURL)
 
-                var request = URLRequest(url: URL(string: "http://unkdir.com/metrics/api/upload_locations")!)
+                let url = "http://unkdir.com/metrics/api/upload_" + dataType;
+                var request = URLRequest(url: URL(string: url)!)
                 request.httpMethod = "POST"
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
                 
-                let s = "[" + entities.map({$0.msg}).joined(separator: ",") + "]"
+                let s = "[" + logs.map({l in l.msg}).joined(separator: ",") + "]"
                 let data = s.data(using: .utf8)
                 let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
                     if let error = error {
@@ -73,14 +74,14 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     func visitToJson(visit: CLVisit) -> String {
         let arrival = visit.arrivalDate == NSDate.distantPast ?
             "null" :
-            "'\(visit.arrivalDate)'"
+            "\"\(visit.arrivalDate)\""
         let departure = visit.departureDate == NSDate.distantFuture ?
             "null" :
-            "'\(visit.departureDate)'"
+            "\"\(visit.departureDate)\""
 
         return """
-            {"arrival": "\(arrival)",
-            "departure": "\(departure)",
+            {"arrival": \(arrival),
+            "departure": \(departure),
             "latitude": \(visit.coordinate.latitude),
             "longitude": \(visit.coordinate.longitude),
             "horizontal_accuracy": \(visit.horizontalAccuracy)}
