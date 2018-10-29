@@ -18,40 +18,38 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5yN-vi-8yd">
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" editable="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5yN-vi-8yd">
                                 <rect key="frame" x="0.0" y="61" width="320" height="449"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 <accessibility key="accessibilityConfiguration" hint="Recents"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="449" id="LYq-bd-SHo"/>
+                                </constraints>
                                 <fontDescription key="fontDescription" name="Courier" family="Courier" pointSize="14"/>
                                 <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             </textView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Location Logs" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ykT-87-LX6">
-                                <rect key="frame" x="16" y="34" width="107" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Location Logs" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ykT-87-LX6">
+                                <rect key="frame" x="16" y="35" width="107" height="20"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nc7-d3-2d6">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="right" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Nc7-d3-2d6">
                                 <rect key="frame" x="171" y="30" width="133" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="View Location Logs"/>
                                 <connections>
                                     <action selector="switchLogs:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8Pg-23-IQE"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HgL-DE-1Lz">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HgL-DE-1Lz">
                                 <rect key="frame" x="24" y="518" width="53" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Refresh"/>
                                 <connections>
                                     <action selector="refresh:" destination="BYZ-38-t0r" eventType="touchUpInside" id="R4t-OD-GSz"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bWc-AA-ara">
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bWc-AA-ara">
                                 <rect key="frame" x="223" y="518" width="73" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Clear Logs"/>
                                 <connections>
                                     <action selector="clearLogs:" destination="BYZ-38-t0r" eventType="touchUpInside" id="6GQ-qS-F8j"/>
@@ -60,6 +58,23 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <accessibility key="accessibilityConfiguration" hint="Recents"/>
+                        <constraints>
+                            <constraint firstItem="5yN-vi-8yd" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="61" id="843-jC-sVY"/>
+                            <constraint firstItem="HgL-DE-1Lz" firstAttribute="top" secondItem="5yN-vi-8yd" secondAttribute="bottom" constant="8" symbolic="YES" id="8jY-aY-55e"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="bWc-AA-ara" secondAttribute="trailing" constant="24" id="LZF-VE-pYQ"/>
+                            <constraint firstItem="5yN-vi-8yd" firstAttribute="width" secondItem="8bC-Xf-vdC" secondAttribute="width" id="Nz4-84-gu0"/>
+                            <constraint firstItem="bWc-AA-ara" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="HgL-DE-1Lz" secondAttribute="trailing" constant="8" symbolic="YES" id="UV9-k8-KG3"/>
+                            <constraint firstItem="5yN-vi-8yd" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="Ufd-v8-mVO"/>
+                            <constraint firstItem="ykT-87-LX6" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="VwZ-7N-6ut"/>
+                            <constraint firstItem="Nc7-d3-2d6" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="ykT-87-LX6" secondAttribute="trailing" constant="8" symbolic="YES" id="YAw-SH-cIC"/>
+                            <constraint firstItem="bWc-AA-ara" firstAttribute="top" secondItem="5yN-vi-8yd" secondAttribute="bottom" constant="8" symbolic="YES" id="Yhb-Ty-q7b"/>
+                            <constraint firstItem="Nc7-d3-2d6" firstAttribute="centerY" secondItem="ykT-87-LX6" secondAttribute="centerY" id="d7B-wH-KUH"/>
+                            <constraint firstItem="HgL-DE-1Lz" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="24" id="hfv-bn-lsB"/>
+                            <constraint firstItem="Nc7-d3-2d6" firstAttribute="baseline" secondItem="ykT-87-LX6" secondAttribute="baseline" id="n12-sZ-C97"/>
+                            <constraint firstItem="Nc7-d3-2d6" firstAttribute="firstBaseline" secondItem="ykT-87-LX6" secondAttribute="baseline" id="n3i-eD-zA5"/>
+                            <constraint firstItem="Nc7-d3-2d6" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="o1z-f5-vJ9"/>
+                            <constraint firstItem="5yN-vi-8yd" firstAttribute="top" secondItem="Nc7-d3-2d6" secondAttribute="bottom" constant="1" id="vNo-J4-h6b"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
