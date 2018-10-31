@@ -12,8 +12,6 @@
 		684D5E37200D89F10080B78B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E35200D89F10080B78B /* Main.storyboard */; };
 		684D5E39200D89F10080B78B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E38200D89F10080B78B /* Assets.xcassets */; };
 		684D5E3C200D89F10080B78B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */; };
-		684D5E47200D89F10080B78B /* loclogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E46200D89F10080B78B /* loclogTests.swift */; };
-		684D5E52200D89F10080B78B /* loclogUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 684D5E51200D89F10080B78B /* loclogUITests.swift */; };
 		6868633120BB57D40077DB52 /* LocationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6868633020BB57D40077DB52 /* LocationDelegate.swift */; };
 		68BB273B2015742E00769962 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BB273A2015742E00769962 /* LogEntry.swift */; };
 /* End PBXBuildFile section */
@@ -45,11 +43,7 @@
 		684D5E3B200D89F10080B78B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		684D5E3D200D89F10080B78B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		684D5E42200D89F10080B78B /* loclogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		684D5E46200D89F10080B78B /* loclogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loclogTests.swift; sourceTree = "<group>"; };
-		684D5E48200D89F10080B78B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		684D5E4D200D89F10080B78B /* loclogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		684D5E51200D89F10080B78B /* loclogUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = loclogUITests.swift; sourceTree = "<group>"; };
-		684D5E53200D89F10080B78B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6868633020BB57D40077DB52 /* LocationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDelegate.swift; sourceTree = "<group>"; };
 		68BB273A2015742E00769962 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,8 +77,6 @@
 			isa = PBXGroup;
 			children = (
 				684D5E30200D89F10080B78B /* loclog */,
-				684D5E45200D89F10080B78B /* loclogTests */,
-				684D5E50200D89F10080B78B /* loclogUITests */,
 				684D5E2F200D89F10080B78B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,24 +105,6 @@
 				68BB273A2015742E00769962 /* LogEntry.swift */,
 			);
 			path = loclog;
-			sourceTree = "<group>";
-		};
-		684D5E45200D89F10080B78B /* loclogTests */ = {
-			isa = PBXGroup;
-			children = (
-				684D5E46200D89F10080B78B /* loclogTests.swift */,
-				684D5E48200D89F10080B78B /* Info.plist */,
-			);
-			path = loclogTests;
-			sourceTree = "<group>";
-		};
-		684D5E50200D89F10080B78B /* loclogUITests */ = {
-			isa = PBXGroup;
-			children = (
-				684D5E51200D89F10080B78B /* loclogUITests.swift */,
-				684D5E53200D89F10080B78B /* Info.plist */,
-			);
-			path = loclogUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -287,7 +261,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				684D5E47200D89F10080B78B /* loclogTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -295,7 +268,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				684D5E52200D89F10080B78B /* loclogUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
