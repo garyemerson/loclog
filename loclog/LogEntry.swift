@@ -38,7 +38,7 @@ class LogEntry: NSObject, NSCoding {
     }
     
     static func loadLogs(url: URL) -> [LogEntry] {
-//        return NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry]
+        // return NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry]
         if let logs = NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry] {
             return logs
         } else {
@@ -101,56 +101,3 @@ class LogEntry: NSObject, NSCoding {
         self.init(timeLogged: datetime, msg: msg)
     }
 }
-
-
-class LogEntry2<T>: NSObject, NSCoding {
-    var timeLogged: Date
-    var data: T
-    
-    static func saveLogs(logs: [LogEntry], url: URL) {
-        if !NSKeyedArchiver.archiveRootObject(logs, toFile: url.path) {
-            print("Failed to save logs")
-        }
-    }
-    
-    static func loadLogs(url: URL) -> [LogEntry]? {
-        //        return NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry]
-        if let logs = NSKeyedUnarchiver.unarchiveObject(withFile: url.path) as? [LogEntry] {
-            return logs
-        } else {
-            return [LogEntry]()
-        }
-    }
-    
-    static func appendLog(msg: String, url: URL) {
-        if var logs = loadLogs(url: url) {
-            logs.append(LogEntry(timeLogged: Date(), msg: msg))
-            saveLogs(logs: logs, url: url)
-        }
-    }
-    
-    func encode(with aCoder: NSCoder) {
-        aCoder.encode(timeLogged, forKey: PropertyKey.datetime)
-        aCoder.encode(data, forKey: PropertyKey.msg)
-    }
-    
-    required init(timeLogged: Date, data: T) {
-        self.timeLogged = timeLogged
-        self.data = data
-    }
-    
-    required convenience init?(coder aDecoder: NSCoder) {
-        // The name is required. If we cannot decode a name string, the initializer should fail.
-        guard let datetime = aDecoder.decodeObject(forKey: PropertyKey.datetime) as? Date else {
-            print("Unable to decode the timeLogged for a LogEntry object.")
-            return nil
-        }
-        guard let data = aDecoder.decodeObject(forKey: PropertyKey.msg) as? T else {
-            print("Unable to decode the msg for a LogEntry object.")
-            return nil
-        }
-        
-        self.init(timeLogged: datetime, data: data)
-    }
-}
-

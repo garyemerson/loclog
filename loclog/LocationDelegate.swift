@@ -11,55 +11,61 @@ import CoreLocation
 
 
 class LocationDelegate: NSObject, CLLocationManagerDelegate {
-   func maybeUpload(dataType: String) {
-        let logUrl = dataType == "visits" ? LogEntry.VisitLogsURL : LogEntry.LocationLogsURL
+    func maybeUpload(dataType: String) {
         let lastUploadUrl = dataType == "visits" ? LogEntry.LastVisitUploadUrl : LogEntry.LastLocationUploadUrl
-        
+
         let lastUpdate = LogEntry.loadLogs(url: lastUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
         if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
-            let logs = LogEntry.loadLogs(url: logUrl)
-            if (!logs.isEmpty) {
-                LogEntry.log(msg: "attempting upload of \(logs.count) \(dataType) to db", url: LogEntry.AppLogsURL)
-
-                let url = "http://unkdir.com/metrics/api/upload_" + dataType;
-                var request = URLRequest(url: URL(string: url)!)
-                request.httpMethod = "POST"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                
-                let s = "[" + logs.map({l in l.msg}).joined(separator: ",") + "]"
-                let data = s.data(using: .utf8)
-                let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
-                    if let error = error {
-                        LogEntry.log(msg: "\(dataType) upload failed: \(error)", url: LogEntry.AppLogsURL)
-                        return
-                    }
-                    guard let r = response as? HTTPURLResponse else {
-                        LogEntry.log(
-                            msg: "failed to cast to HTTPURLResponse attempting to upload \(dataType) data",
-                            url: LogEntry.AppLogsURL)
-                        return
-                    }
-                    if r.statusCode != 200 {
-                        let body = String(data: data ?? Data(), encoding: .utf8) ?? String()
-                        LogEntry.log(msg: "\(dataType) upload failed with \(r.statusCode): \(body)", url: LogEntry.AppLogsURL)
-                        return
-                    }
-                    LogEntry.log(msg: "\(dataType) upload succeeded", url: LogEntry.AppLogsURL)
-                    LogEntry.saveLogs(logs: [], url: logUrl)
-                    LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: lastUploadUrl)
-                }
-                task.resume()
-            }
+            upload(dataType: dataType)
         } else {
             LogEntry.log(
                 msg: "Recent \(dataType) upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
                 url: LogEntry.AppLogsURL)
         }
     }
+    
+    func upload(dataType: String) {
+        let logUrl = dataType == "visits" ? LogEntry.VisitLogsURL : LogEntry.LocationLogsURL
+        let lastUploadUrl = dataType == "visits" ? LogEntry.LastVisitUploadUrl : LogEntry.LastLocationUploadUrl
+
+        let logs = LogEntry.loadLogs(url: logUrl)
+        if (!logs.isEmpty) {
+            LogEntry.log(msg: "attempting upload of \(logs.count) \(dataType) to db", url: LogEntry.AppLogsURL)
+            
+            let url = "http://unkdir.com/metrics/api/upload_" + dataType;
+            var request = URLRequest(url: URL(string: url)!)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let s = "[" + logs.map({l in l.msg}).joined(separator: ",") + "]"
+            let data = s.data(using: .utf8)
+            let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
+                if let error = error {
+                    LogEntry.log(msg: "\(dataType) upload failed: \(error)", url: LogEntry.AppLogsURL)
+                    return
+                }
+                guard let r = response as? HTTPURLResponse else {
+                    LogEntry.log(
+                        msg: "failed to cast to HTTPURLResponse attempting to upload \(dataType) data",
+                        url: LogEntry.AppLogsURL)
+                    return
+                }
+                if r.statusCode != 200 {
+                    let body = String(data: data ?? Data(), encoding: .utf8) ?? String()
+                    LogEntry.log(msg: "\(dataType) upload failed with \(r.statusCode): \(body)", url: LogEntry.AppLogsURL)
+                    return
+                }
+                LogEntry.log(msg: "\(dataType) upload succeeded", url: LogEntry.AppLogsURL)
+                LogEntry.saveLogs(logs: [], url: logUrl)
+                LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: lastUploadUrl)
+            }
+            task.resume()
+        }
+    }
 
     func locationToJson(location: CLLocation) -> String {
         return """
-            {"date": "\(location.timestamp)",
+            {"date": "\(ISO8601DateFormatter().string(from: location.timestamp))",
             "latitude": \(location.coordinate.latitude),
             "longitude": \(location.coordinate.longitude),
             "altitude": \(location.altitude),
@@ -74,10 +80,10 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     func visitToJson(visit: CLVisit) -> String {
         let arrival = visit.arrivalDate == NSDate.distantPast ?
             "null" :
-            "\"\(visit.arrivalDate)\""
+            "\"\(ISO8601DateFormatter().string(from: visit.arrivalDate))\""
         let departure = visit.departureDate == NSDate.distantFuture ?
             "null" :
-            "\"\(visit.departureDate)\""
+            "\"\(ISO8601DateFormatter().string(from: visit.departureDate))\""
 
         return """
             {"arrival": \(arrival),
@@ -95,18 +101,12 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
                 msgs: locations.map(locationToJson),
                 url: LogEntry.LocationLogsURL)
             
-            // let coord = locations.max(by: { $0.timestamp < $1.timestamp })!.coordinate
-            // LogEntry.log(msg: "creating new regions with center \(coord)", url: LogEntry.AppLogsURL)
-            // let region = CLCircularRegion(center: coord, radius: 10, identifier: "foobar")
-            // let region2 = CLCircularRegion(center: coord, radius: 100, identifier: "foobar2")
-            // let region3 = CLCircularRegion(center: coord, radius: 1000, identifier: "foobar3")
-            // let region4 = CLCircularRegion(center: coord, radius: 10000, identifier: "foobar4")
-            // NotificationCenter.default.post(name: NSNotification.Name("regionsUpdated"), object: [ region, region2, region3, region4 ])
-            // manager.startMonitoring(for: region)
-            // manager.startMonitoring(for: region2)
-            // manager.startMonitoring(for: region3)
-            // manager.startMonitoring(for: region4)
-            
+           // let min: Double? = locations.map({l in l.horizontalAccuracy}).min()
+           // if min.map({m in m > 50}) ?? false {
+           //     LogEntry.log(msg: "inaccurate location update, best is \(min!)m, requesting again", url: LogEntry.AppLogsURL)
+           //     NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
+           // }
+
             maybeUpload(dataType: "locations")
         }
     }
@@ -149,7 +149,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     }
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
         LogEntry.log(msg: "exited region \(region.identifier)", url: LogEntry.AppLogsURL)
-        // locManager.requestLocation()
+        manager.requestLocation()
         manager.startUpdatingLocation()
     }
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {

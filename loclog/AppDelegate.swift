@@ -13,17 +13,37 @@ import CoreLocation
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var locManager: CLLocationManager = CLLocationManager()
+    var locManager = CLLocationManager()
     var locDelegate = LocationDelegate()
+    var requests: [Date] = []
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         LogEntry.log(
-            msg: "app launched with options: " + (launchOptions?.map({$0.key.rawValue}).joined(separator: ",") ?? "<none>"),
+            msg: "app launched with options: " + (launchOptions?.map({opt in opt.key.rawValue}).joined(separator: ",") ?? "<none>"),
+            url: LogEntry.AppLogsURL)
+        LogEntry.log(
+            msg: "deferredLocationUpdatesAvailable: \(CLLocationManager.deferredLocationUpdatesAvailable())",
+            url: LogEntry.AppLogsURL)
+        LogEntry.log(
+            msg: "locations services enabled: \(CLLocationManager.locationServicesEnabled())",
             url: LogEntry.AppLogsURL)
         
+        setupLocationMonitoring()
+//        foobar()
+        
+        return true
+    }
+    
+    func setupLocationMonitoring() {
         locManager.delegate = locDelegate
+        locManager.allowsBackgroundLocationUpdates = true
+        locManager.desiredAccuracy = kCLLocationAccuracyBest
+        locManager.distanceFilter = kCLDistanceFilterNone
         if CLLocationManager.authorizationStatus() == CLAuthorizationStatus.authorizedAlways {
+            // LogEntry.log(msg: "making one-off request", url: LogEntry.AppLogsURL)
+            // locManager.requestLocation()
+
             LogEntry.log(msg: "starting monitoring of visits", url: LogEntry.AppLogsURL)
             locManager.startMonitoringVisits()
 
@@ -34,27 +54,71 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 LogEntry.log(msg: "significant locations changes API not available", url: LogEntry.AppLogsURL)
             }
         } else {
+            LogEntry.log(msg: "requesting always auth", url: LogEntry.AppLogsURL)
             locManager.requestAlwaysAuthorization()
         }
-        //locManager.allowDeferredLocationUpdates(untilTraveled: CLLocationDistanceMax, timeout: 2)
-        locManager.allowsBackgroundLocationUpdates = true
-        locManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        locManager.distanceFilter = kCLLocationAccuracyHundredMeters
-                
+
         NotificationCenter.default.addObserver(
             forName: NSNotification.Name("requestLocation"),
             object: nil,
-            queue: OperationQueue.main) { (note) in
-                self.locManager.requestLocation()
-        }
-        
-        return true
-    }
-    
-    func locationUpdateRequested(notification: Notification) {
-        self.locManager.requestLocation()
+            queue: OperationQueue.main) { (note) in self.requestLocationWithRateLimiting() }
     }
 
+    func requestLocationWithRateLimiting() {
+        if self.requests.filter({d in d.timeIntervalSinceNow <= (60 * 60)}).count < 30 &&
+            self.requests.filter({d in d.timeIntervalSinceNow <= (10 * 60)}).count < 20 &&
+            self.requests.filter({d in d.timeIntervalSinceNow <= 60}).count < 10
+        {
+            print("requesting location")
+            self.locManager.requestLocation()
+            self.requests.append(Date())
+            self.requests = self.requests.filter({d in d.timeIntervalSinceNow > (60 * 60)})
+        } else {
+            LogEntry.log(msg: "too many requests made, skipping", url: LogEntry.AppLogsURL)
+        }
+    }
+    
+    func foobar() {
+        //        print("files:\n  " + ((FileManager.default.enumerator(atPath: NSHomeDirectory())!.allObjects as? [String])?.joined(separator: "\n  ") ?? ""))
+        print("username: \(NSFullUserName())")
+        print("home dir: \(NSHomeDirectory())")
+        print("tmp dir: \(NSTemporaryDirectory())")
+        print("files (sizes)")
+        for f in FileManager.default.enumerator(atPath: NSHomeDirectory())! {
+            if let dict = try? FileManager.default.attributesOfItem(atPath: NSHomeDirectory() + "/\(f)") {
+                let size = (dict as NSDictionary).fileSize()
+                print("  \(f) (\(size))")
+            } else {
+                print("  <error>")
+            }
+        }
+        
+        //        do {
+        //            try FileManager.default.removeItem(at: URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("tmp/foobar"))
+        //            print("remove success")
+        //        } catch {
+        //            print("remove failed: \(error)")
+        //        }
+        //        let filePath = NSTemporaryDirectory() + "/foobar"
+        //        print("file path is: \(filePath)")
+        //        if !FileManager.default.createFile(atPath: filePath, contents: Data()) {
+        //            print("file creation failed")
+        //        }
+        
+        let startTime = CFAbsoluteTimeGetCurrent()
+        if let h = FileHandle(forUpdatingAtPath: NSHomeDirectory() + "/Documents/app_logs") {
+            for _ in 0..<1_000 {
+                h.seekToEndOfFile()
+                h.seek(toFileOffset: 0)
+            }
+            //            let data = h.readDataToEndOfFile()
+            //            print("read \(data.count) bytes")
+        } else {
+            print("open failed")
+        }
+        print("open/seek elapsed: \(CFAbsoluteTimeGetCurrent() - startTime)s")
+    }
+    
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
