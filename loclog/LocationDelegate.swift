@@ -73,7 +73,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
             "vertical_accuracy": \(location.verticalAccuracy),
             "course": \(location.course),
             "speed": \(location.speed),
-            "floor": \(location.floor?.description ?? "null")}
+            "floor": \(location.floor?.level.description ?? "null")}
             """
     }
     
