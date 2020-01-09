@@ -13,7 +13,7 @@
 		684D5E39200D89F10080B78B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E38200D89F10080B78B /* Assets.xcassets */; };
 		684D5E3C200D89F10080B78B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */; };
 		6868633120BB57D40077DB52 /* LocationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6868633020BB57D40077DB52 /* LocationDelegate.swift */; };
-		68BB273B2015742E00769962 /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BB273A2015742E00769962 /* LogEntry.swift */; };
+		68BB273B2015742E00769962 /* LogUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BB273A2015742E00769962 /* LogUtil.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,7 +45,7 @@
 		684D5E42200D89F10080B78B /* loclogTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		684D5E4D200D89F10080B78B /* loclogUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = loclogUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6868633020BB57D40077DB52 /* LocationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationDelegate.swift; sourceTree = "<group>"; };
-		68BB273A2015742E00769962 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		68BB273A2015742E00769962 /* LogUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogUtil.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,7 +102,7 @@
 				684D5E38200D89F10080B78B /* Assets.xcassets */,
 				684D5E3A200D89F10080B78B /* LaunchScreen.storyboard */,
 				684D5E3D200D89F10080B78B /* Info.plist */,
-				68BB273A2015742E00769962 /* LogEntry.swift */,
+				68BB273A2015742E00769962 /* LogUtil.swift */,
 			);
 			path = loclog;
 			sourceTree = "<group>";
@@ -252,7 +252,7 @@
 			files = (
 				684D5E34200D89F10080B78B /* ViewController.swift in Sources */,
 				684D5E32200D89F10080B78B /* AppDelegate.swift in Sources */,
-				68BB273B2015742E00769962 /* LogEntry.swift in Sources */,
+				68BB273B2015742E00769962 /* LogUtil.swift in Sources */,
 				6868633120BB57D40077DB52 /* LocationDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

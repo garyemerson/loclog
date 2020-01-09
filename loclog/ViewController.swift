@@ -17,22 +17,11 @@ class ViewController: UIViewController, UITextViewDelegate {
 //    @IBOutlet weak var currentLogLabel: UILabel!
     var currLog = LogType.App
     
-
     override func viewDidLoad() {
         print("view did load")
         super.viewDidLoad()
         doubleTapGesture.numberOfTapsRequired = 2;
 //        self.recentLogs.attributedText = NSAttributedString(string: "loading logs...")
-        
-//        let startTime = CFAbsoluteTimeGetCurrent()
-//        let s = NSMutableAttributedString()
-//        for _ in 0..<10_000 {
-//            let temp = NSMutableAttributedString(string: "foo", attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
-//            temp.append(NSAttributedString(string: "barbaz\n"))
-//            s.append(temp)
-//        }
-//        self.recentLogs.attributedText = s
-//        print("log elapsed: \(CFAbsoluteTimeGetCurrent() - startTime)s")
         
         // Do any additional setup after loading the view, typically from a nib.
         NotificationCenter.default.addObserver(
@@ -45,7 +34,6 @@ class ViewController: UIViewController, UITextViewDelegate {
             object: nil,
             queue: OperationQueue.main,
             using: logsChanged(notification:))
-        reloadLogView()
     }
     
     func logsChanged(notification: Notification) {
@@ -53,11 +41,11 @@ class ViewController: UIViewController, UITextViewDelegate {
         self.reloadLogView()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-//        print("view did appear")
-//        maybeReloadRecentLogView()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reloadLogView()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -95,9 +83,13 @@ class ViewController: UIViewController, UITextViewDelegate {
     }
 
     func reloadLogView() {
-        let logTypeToUrl = [LogType.App: LogEntry.AppLogsURL, LogType.Location: LogEntry.LocationLogsURL, LogType.Visit: LogEntry.VisitLogsURL]
+        let logTypeToUrl = [
+            LogType.App: LogUtil.AppLogsURL,
+            LogType.Location: LogUtil.LocationLogsURL,
+            LogType.Visit: LogUtil.VisitLogsURL
+        ]
         let logType = self.currLog
-        let logs: [LogEntry] = LogEntry.loadLogs(url: logTypeToUrl[logType] ?? LogEntry.AppLogsURL)
+        let url = logTypeToUrl[logType] ?? LogUtil.AppLogsURL
 
         var str: NSMutableAttributedString = NSMutableAttributedString()
         DispatchQueue.global(qos: .background).async {
@@ -109,8 +101,9 @@ class ViewController: UIViewController, UITextViewDelegate {
             dateFmt2.locale = Locale(identifier: "en_US")
             dateFmt2.setLocalizedDateFormatFromTemplate("HH:mm:ss")
 
-            let recent: ArraySlice = logs.dropFirst(max(0, logs.count - 500))
-            str = Dictionary(grouping: recent, by: { (e: LogEntry) in Calendar.current.startOfDay(for: e.timeLogged) })
+//            let recent: ArraySlice = logs.dropFirst(max(0, logs.count - 500))
+            let recent = LogUtil.load(url: url, last: 500)
+            str = Dictionary(grouping: recent, by: { (e: LogEntry) in Calendar.current.startOfDay(for: e.time) })
                 .sorted(by: { $0.key > $1.key })
                 .map({(e) -> NSMutableAttributedString in
                     let dayLogs = NSMutableAttributedString(
@@ -118,12 +111,17 @@ class ViewController: UIViewController, UITextViewDelegate {
                         attributes: [NSAttributedString.Key.foregroundColor: UIColor.white, NSAttributedString.Key.backgroundColor: UIColor.blue])
 
                     let logLines: NSMutableAttributedString = e.value
-                        .sorted(by: { (a: LogEntry, b: LogEntry) in a.timeLogged > b.timeLogged })
+                        .sorted(by: { (a: LogEntry, b: LogEntry) in a.time > b.time })
                         .map({(log: LogEntry) -> NSMutableAttributedString in
                             let s = NSMutableAttributedString(
-                                string: "[\(dateFmt2.string(from: log.timeLogged))] ",
+                                string: "[\(dateFmt2.string(from: log.time))] ",
                                 attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
-                            s.append(NSAttributedString(string: log.msg + "\n"))
+                            if #available(iOS 13.0, *) {
+                                s.append(NSAttributedString(string: log.msg + "\n", attributes: [NSAttributedString.Key.foregroundColor: UIColor.label]))
+                            } else {
+                                // Fallback on earlier versions
+                                s.append(NSAttributedString(string: log.msg + "\n"))
+                            }
                             return s
                         })
                         .reduce(
@@ -135,13 +133,17 @@ class ViewController: UIViewController, UITextViewDelegate {
                 })
                 .reduce(
                     NSMutableAttributedString(),
-                    { (acc, curr) in let x = (acc.mutableCopy() as! NSMutableAttributedString); x.append(curr); return x })
+                    {(acc, curr) in
+                        let x = (acc.mutableCopy() as! NSMutableAttributedString)
+                        x.append(curr)
+                        return x
+                })
 
             DispatchQueue.main.async {
                 if self.currLog == logType {
-                    let startTime = CFAbsoluteTimeGetCurrent()
+                    let start = CFAbsoluteTimeGetCurrent()
                     self.recentLogs.attributedText = str
-                    print("done assigning recentLogs.attributedText, elapsed: \(CFAbsoluteTimeGetCurrent() - startTime)s")
+                    print("done assigning recentLogs.attributedText, elapsed: \(CFAbsoluteTimeGetCurrent() - start)s")
                 }
             }
         }

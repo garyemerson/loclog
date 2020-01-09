@@ -12,25 +12,25 @@ import CoreLocation
 
 class LocationDelegate: NSObject, CLLocationManagerDelegate {
     func maybeUpload(dataType: String) {
-        let lastUploadUrl = dataType == "visits" ? LogEntry.LastVisitUploadUrl : LogEntry.LastLocationUploadUrl
+        let lastUploadUrl = dataType == "visits" ? LogUtil.LastVisitUploadUrl : LogUtil.LastLocationUploadUrl
 
-        let lastUpdate = LogEntry.loadLogs(url: lastUploadUrl).max(by: { $0.timeLogged < $1.timeLogged })
-        if lastUpdate == nil || lastUpdate!.timeLogged.timeIntervalSinceNow < -(10 * 60) {
+        let lastUpdate = LogUtil.getMarker(url: lastUploadUrl)
+        if lastUpdate == nil || lastUpdate!.timeIntervalSinceNow < -(10 * 60) {
             upload(dataType: dataType)
         } else {
-            LogEntry.log(
-                msg: "Recent \(dataType) upload \(Int(lastUpdate!.timeLogged.timeIntervalSinceNow)) seconds ago, skipping",
-                url: LogEntry.AppLogsURL)
+            LogUtil.log(
+                msg: "Recent \(dataType) upload \(Int(lastUpdate!.timeIntervalSinceNow)) seconds ago, skipping",
+                url: LogUtil.AppLogsURL)
         }
     }
     
     func upload(dataType: String) {
-        let logUrl = dataType == "visits" ? LogEntry.VisitLogsURL : LogEntry.LocationLogsURL
-        let lastUploadUrl = dataType == "visits" ? LogEntry.LastVisitUploadUrl : LogEntry.LastLocationUploadUrl
+        let logUrl = dataType == "visits" ? LogUtil.VisitLogsURL : LogUtil.LocationLogsURL
+        let lastUploadUrl = dataType == "visits" ? LogUtil.LastVisitUploadUrl : LogUtil.LastLocationUploadUrl
 
-        let logs = LogEntry.loadLogs(url: logUrl)
+        let logs = LogUtil.load(url: logUrl)
         if (!logs.isEmpty) {
-            LogEntry.log(msg: "attempting upload of \(logs.count) \(dataType) to db", url: LogEntry.AppLogsURL)
+            LogUtil.log(msg: "attempting upload of \(logs.count) \(dataType) to db", url: LogUtil.AppLogsURL)
             
             let url = "http://unkdir.com/metrics/api/upload_" + dataType;
             var request = URLRequest(url: URL(string: url)!)
@@ -41,23 +41,23 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
             let data = s.data(using: .utf8)
             let task = URLSession.shared.uploadTask(with: request, from: data) { data, response, error in
                 if let error = error {
-                    LogEntry.log(msg: "\(dataType) upload failed: \(error)", url: LogEntry.AppLogsURL)
+                    LogUtil.log(msg: "\(dataType) upload failed: \(error)", url: LogUtil.AppLogsURL)
                     return
                 }
                 guard let r = response as? HTTPURLResponse else {
-                    LogEntry.log(
+                    LogUtil.log(
                         msg: "failed to cast to HTTPURLResponse attempting to upload \(dataType) data",
-                        url: LogEntry.AppLogsURL)
+                        url: LogUtil.AppLogsURL)
                     return
                 }
                 if r.statusCode != 200 {
                     let body = String(data: data ?? Data(), encoding: .utf8) ?? String()
-                    LogEntry.log(msg: "\(dataType) upload failed with \(r.statusCode): \(body)", url: LogEntry.AppLogsURL)
+                    LogUtil.log(msg: "\(dataType) upload failed with \(r.statusCode): \(body)", url: LogUtil.AppLogsURL)
                     return
                 }
-                LogEntry.log(msg: "\(dataType) upload succeeded", url: LogEntry.AppLogsURL)
-                LogEntry.saveLogs(logs: [], url: logUrl)
-                LogEntry.saveLogs(logs: [LogEntry(timeLogged: Date(), msg: "")], url: lastUploadUrl)
+                LogUtil.log(msg: "\(dataType) upload succeeded", url: LogUtil.AppLogsURL)
+                LogUtil.clear(url: logUrl)
+                LogUtil.setMarker(date: Date(), url: lastUploadUrl)
             }
             task.resume()
         }
@@ -96,14 +96,14 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if !locations.isEmpty {
-            LogEntry.log(msg: "received location update", url: LogEntry.AppLogsURL)
-            LogEntry.log(
+            LogUtil.log(msg: "received location update", url: LogUtil.AppLogsURL)
+            LogUtil.log(
                 msgs: locations.map(locationToJson),
-                url: LogEntry.LocationLogsURL)
+                url: LogUtil.LocationLogsURL)
             
            // let min: Double? = locations.map({l in l.horizontalAccuracy}).min()
            // if min.map({m in m > 50}) ?? false {
-           //     LogEntry.log(msg: "inaccurate location update, best is \(min!)m, requesting again", url: LogEntry.AppLogsURL)
+           //     LogUtil.log(msg: "inaccurate location update, best is \(min!)m, requesting again", url: LogUtil.AppLogsURL)
            //     NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
            // }
 
@@ -112,51 +112,51 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didVisit visit: CLVisit) {
-        LogEntry.log(msg: "received visit update", url: LogEntry.AppLogsURL)
-        LogEntry.log(msg: visitToJson(visit: visit), url: LogEntry.VisitLogsURL)
+        LogUtil.log(msg: "received visit update", url: LogUtil.AppLogsURL)
+        LogUtil.log(msg: visitToJson(visit: visit), url: LogUtil.VisitLogsURL)
         maybeUpload(dataType: "visits")
     }
     func locationManagerDidPauseLocationUpdates(_ manager: CLLocationManager) {
-        LogEntry.log(msg: "location updates paused", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "location updates paused", url: LogUtil.AppLogsURL)
     }
     func locationManagerDidResumeLocationUpdates(_ manager: CLLocationManager) {
-        LogEntry.log(msg: "location updates resumed", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "location updates resumed", url: LogUtil.AppLogsURL)
     }
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        LogEntry.log(msg: "error: \(error.localizedDescription)", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "error: \(error.localizedDescription)", url: LogUtil.AppLogsURL)
     }
     func locationManager(_ manager: CLLocationManager, didFinishDeferredUpdatesWithError error: Error?) {
-        LogEntry.log(msg: "defer error: \(error.debugDescription)", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "defer error: \(error.debugDescription)", url: LogUtil.AppLogsURL)
     }
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        LogEntry.log(msg: "auth status is \(authToStr(status: status))", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "auth status is \(authToStr(status: status))", url: LogUtil.AppLogsURL)
         if status == CLAuthorizationStatus.authorizedAlways {
-            LogEntry.log(msg: "starting monitoring of visits", url: LogEntry.AppLogsURL)
+            LogUtil.log(msg: "starting monitoring of visits", url: LogUtil.AppLogsURL)
             manager.startMonitoringVisits()
             
             if CLLocationManager.significantLocationChangeMonitoringAvailable() {
-                LogEntry.log(msg: "starting monitoring of significant location changes", url: LogEntry.AppLogsURL)
+                LogUtil.log(msg: "starting monitoring of significant location changes", url: LogUtil.AppLogsURL)
                 manager.startMonitoringSignificantLocationChanges()
             } else {
-                LogEntry.log(msg: "significant locations changes API not available", url: LogEntry.AppLogsURL)
+                LogUtil.log(msg: "significant locations changes API not available", url: LogUtil.AppLogsURL)
             }
         }
     }
     func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
-        LogEntry.log(
+        LogUtil.log(
             msg: "monitor error for region \(region?.identifier ?? "<none>"): \(error.localizedDescription)",
-            url: LogEntry.AppLogsURL)
+            url: LogUtil.AppLogsURL)
     }
     func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        LogEntry.log(msg: "exited region \(region.identifier)", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "exited region \(region.identifier)", url: LogUtil.AppLogsURL)
         manager.requestLocation()
         manager.startUpdatingLocation()
     }
     func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-        LogEntry.log(msg: "entered region \(region.identifier)", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "entered region \(region.identifier)", url: LogUtil.AppLogsURL)
     }
     func locationManager(_ manager: CLLocationManager, didDetermineState state: CLRegionState, for region: CLRegion) {
-        LogEntry.log(msg: "region \(region.identifier) state is \(stateToStr(state: state))", url: LogEntry.AppLogsURL)
+        LogUtil.log(msg: "region \(region.identifier) state is \(stateToStr(state: state))", url: LogUtil.AppLogsURL)
     }
     func authToStr(status: CLAuthorizationStatus) -> String {
         switch (status) {
@@ -170,6 +170,9 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
             return "authorizedAlways"
         case CLAuthorizationStatus.authorizedWhenInUse:
             return "authorizedWhenInUse"
+        @unknown default:
+            print("unknown CLAuthorizationStatus \(status)")
+            exit(0)
         }
     }
     func stateToStr(state: CLRegionState) -> String {
