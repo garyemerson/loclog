@@ -21,10 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let start = CFAbsoluteTimeGetCurrent()
         LogUtil.log(
-            msg: "app launched with options: " + (launchOptions?.map({opt in opt.key.rawValue}).joined(separator: ",") ?? "<none>"),
-            url: LogUtil.AppLogsURL)
-        LogUtil.log(
-            msg: "deferredLocationUpdatesAvailable: \(CLLocationManager.deferredLocationUpdatesAvailable())",
+            msg: "app launched with options: " + (launchOptions?.map({opt in "\(opt.key):\(opt.value)"}).joined(separator: ",") ?? "<none>"),
             url: LogUtil.AppLogsURL)
         LogUtil.log(
             msg: "locations services enabled: \(CLLocationManager.locationServicesEnabled())",

@@ -429,6 +429,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = loclog/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.self.loclog;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -450,6 +451,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = loclog/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.self.loclog;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -8,15 +8,25 @@
 
 import Foundation
 import CoreLocation
-
+import Network
 
 class LocationDelegate: NSObject, CLLocationManagerDelegate {
+    var pathMonitor = NWPathMonitor()
+    
+    override init() {
+        pathMonitor.start(queue: DispatchQueue.global(qos: .background))
+    }
+    
     func maybeUpload(dataType: String) {
+        if pathMonitor.currentPath.status != .satisfied {
+            LogUtil.log(msg: "internet not available, skipping upload", url: LogUtil.AppLogsURL)
+            return
+        }
+        
         let lastUploadUrl = dataType == "visits" ? LogUtil.LastVisitUploadUrl : LogUtil.LastLocationUploadUrl
-
         let lastUpdate = LogUtil.getMarker(url: lastUploadUrl)
         if lastUpdate == nil || lastUpdate!.timeIntervalSinceNow < -(10 * 60) {
-            upload(dataType: dataType)
+            LocationDelegate.upload(dataType: dataType)
         } else {
             LogUtil.log(
                 msg: "Recent \(dataType) upload \(Int(lastUpdate!.timeIntervalSinceNow)) seconds ago, skipping",
@@ -24,7 +34,7 @@ class LocationDelegate: NSObject, CLLocationManagerDelegate {
         }
     }
     
-    func upload(dataType: String) {
+    static func upload(dataType: String) {
         let logUrl = dataType == "visits" ? LogUtil.VisitLogsURL : LogUtil.LocationLogsURL
         let lastUploadUrl = dataType == "visits" ? LogUtil.LastVisitUploadUrl : LogUtil.LastLocationUploadUrl
 

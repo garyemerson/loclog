@@ -58,8 +58,8 @@ class ViewController: UIViewController, UITextViewDelegate {
             NotificationCenter.default.post(Notification(name: Notification.Name("requestLocation")))
         }))
         alert.addAction(UIAlertAction(title: "Upload Location Data", style: .default, handler: { _ in
-            LocationDelegate().upload(dataType: "visits")
-            LocationDelegate().upload(dataType: "locations")
+            LocationDelegate.upload(dataType: "visits")
+            LocationDelegate.upload(dataType: "locations")
             self.reloadLogView()
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -79,6 +79,7 @@ class ViewController: UIViewController, UITextViewDelegate {
         let nextLog = [LogType.App: LogType.Location, LogType.Location: LogType.Visit, LogType.Visit: LogType.App]
         self.currLog = nextLog[self.currLog] ?? LogType.App
         self.logButton.setTitle("\(self.currLog) Logs", for: .normal)
+        self.logButton.sizeToFit()
         self.reloadLogView()
     }
 
@@ -93,51 +94,21 @@ class ViewController: UIViewController, UITextViewDelegate {
 
         var str: NSMutableAttributedString = NSMutableAttributedString()
         DispatchQueue.global(qos: .background).async {
-            let dateFmt = DateFormatter()
-            dateFmt.locale = Locale(identifier: "en_US")
-            dateFmt.setLocalizedDateFormatFromTemplate("yyyy-MM-dd")
-
-            let dateFmt2 = DateFormatter()
-            dateFmt2.locale = Locale(identifier: "en_US")
-            dateFmt2.setLocalizedDateFormatFromTemplate("HH:mm:ss")
-
-//            let recent: ArraySlice = logs.dropFirst(max(0, logs.count - 500))
             let recent = LogUtil.load(url: url, last: 500)
             str = Dictionary(grouping: recent, by: { (e: LogEntry) in Calendar.current.startOfDay(for: e.time) })
                 .sorted(by: { $0.key > $1.key })
-                .map({(e) -> NSMutableAttributedString in
-                    let dayLogs = NSMutableAttributedString(
-                        string: "--\(dateFmt.string(from: e.key))--\n",
-                        attributes: [NSAttributedString.Key.foregroundColor: UIColor.white, NSAttributedString.Key.backgroundColor: UIColor.blue])
-
-                    let logLines: NSMutableAttributedString = e.value
-                        .sorted(by: { (a: LogEntry, b: LogEntry) in a.time > b.time })
-                        .map({(log: LogEntry) -> NSMutableAttributedString in
-                            let s = NSMutableAttributedString(
-                                string: "[\(dateFmt2.string(from: log.time))] ",
-                                attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
-                            if #available(iOS 13.0, *) {
-                                s.append(NSAttributedString(string: log.msg + "\n", attributes: [NSAttributedString.Key.foregroundColor: UIColor.label]))
-                            } else {
-                                // Fallback on earlier versions
-                                s.append(NSAttributedString(string: log.msg + "\n"))
-                            }
-                            return s
-                        })
-                        .reduce(
-                            NSMutableAttributedString(),
-                            { (acc, curr) in let x = (acc.mutableCopy() as! NSMutableAttributedString); x.append(curr); return x })
-
+                .map({ (date: Date, logs: [LogEntry]) -> NSMutableAttributedString in
+                    let dateHeader = ViewController.fmtDateHeader(date: date)
+                    let logLines: NSMutableAttributedString = logs
+                        .sorted(by: { $0.time > $1.time })
+                        .map(ViewController.fmtLogEntry)
+                        .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
+                    let dayLogs = NSMutableAttributedString()
+                    dayLogs.append(dateHeader)
                     dayLogs.append(logLines)
                     return dayLogs
                 })
-                .reduce(
-                    NSMutableAttributedString(),
-                    {(acc, curr) in
-                        let x = (acc.mutableCopy() as! NSMutableAttributedString)
-                        x.append(curr)
-                        return x
-                })
+                .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
 
             DispatchQueue.main.async {
                 if self.currLog == logType {
@@ -147,5 +118,30 @@ class ViewController: UIViewController, UITextViewDelegate {
                 }
             }
         }
+    }
+    
+    static func fmtDateHeader(date: Date) -> NSMutableAttributedString {
+        let dateFmt = DateFormatter()
+        dateFmt.locale = Locale(identifier: "en_US")
+        dateFmt.setLocalizedDateFormatFromTemplate("yyyy-MM-dd")
+        return NSMutableAttributedString(
+            string: "--\(dateFmt.string(from: date))--\n",
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.white, NSAttributedString.Key.backgroundColor: UIColor.blue])
+    }
+  
+    static func fmtLogEntry(log: LogEntry) -> NSMutableAttributedString {
+        let timeFmt = DateFormatter()
+        timeFmt.locale = Locale(identifier: "en_US")
+        timeFmt.setLocalizedDateFormatFromTemplate("HH:mm:ss")
+        let s = NSMutableAttributedString(
+            string: "[\(timeFmt.string(from: log.time))] ",
+            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+        if #available(iOS 13.0, *) {
+            s.append(NSAttributedString(string: log.msg + "\n", attributes: [NSAttributedString.Key.foregroundColor: UIColor.label]))
+        } else {
+            // Fallback on earlier versions
+            s.append(NSAttributedString(string: log.msg + "\n"))
+        }
+        return s
     }
 }
