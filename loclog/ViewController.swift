@@ -92,23 +92,24 @@ class ViewController: UIViewController, UITextViewDelegate {
         let logType = self.currLog
         let url = logTypeToUrl[logType] ?? LogUtil.AppLogsURL
 
-        var str: NSMutableAttributedString = NSMutableAttributedString()
         DispatchQueue.global(qos: .background).async {
+            var str: NSMutableAttributedString = NSMutableAttributedString()
             let recent = LogUtil.load(url: url, last: 500)
-            str = Dictionary(grouping: recent, by: { (e: LogEntry) in Calendar.current.startOfDay(for: e.time) })
-                .sorted(by: { $0.key > $1.key })
-                .map({ (date: Date, logs: [LogEntry]) -> NSMutableAttributedString in
-                    let dateHeader = ViewController.fmtDateHeader(date: date)
-                    let logLines: NSMutableAttributedString = logs
-                        .sorted(by: { $0.time > $1.time })
-                        .map(ViewController.fmtLogEntry)
-                        .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
-                    let dayLogs = NSMutableAttributedString()
-                    dayLogs.append(dateHeader)
-                    dayLogs.append(logLines)
-                    return dayLogs
-                })
-                .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
+            if recent.isEmpty {
+                str = NSMutableAttributedString(string: "(empty)", attributes: [.foregroundColor: UIColor.lightGray])
+            } else {
+                str = Dictionary(grouping: recent, by: { (e: LogEntry) in Calendar.current.startOfDay(for: e.time) })
+                    .sorted(by: { $0.key > $1.key })
+                    .flatMap({ (date: Date, logs: [LogEntry]) -> [NSMutableAttributedString] in
+                        let dateHeader = ViewController.fmtDateHeader(date: date)
+                        let logLines: NSMutableAttributedString = logs
+                            .sorted(by: { $0.time > $1.time })
+                            .map(ViewController.fmtLogEntry)
+                            .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
+                        return [dateHeader, logLines]
+                    })
+                    .reduce(NSMutableAttributedString(), { (acc, curr) in acc.append(curr); return acc })
+            }
 
             DispatchQueue.main.async {
                 if self.currLog == logType {
@@ -125,7 +126,7 @@ class ViewController: UIViewController, UITextViewDelegate {
         dateFmt.locale = Locale(identifier: "en_US")
         dateFmt.setLocalizedDateFormatFromTemplate("yyyy-MM-dd")
         return NSMutableAttributedString(
-            string: "--\(dateFmt.string(from: date))--\n",
+            string: "\(dateFmt.string(from: date))\n",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.white, NSAttributedString.Key.backgroundColor: UIColor.blue])
     }
   
