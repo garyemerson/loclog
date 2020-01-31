@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             msg: "locations services enabled: \(CLLocationManager.locationServicesEnabled())",
             url: LogUtil.AppLogsURL)
         print(String(format: "%.3fs", CFAbsoluteTimeGetCurrent() - start))
-        
+
         setupLocationMonitoring()
 //        foobar()
         
@@ -105,6 +105,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     func foobar() {
+        let url = LogUtil.AppLogsURL
+        var lines: [String] = try! String(contentsOf: url, encoding: .utf8)
+            .components(separatedBy: .newlines)
+        let last: Int? = 500
+        if let last = last {
+            lines = lines.suffix(last)
+        }
+        lines = lines.filter({ l in !l.isEmpty})
+        for (i, l) in lines.enumerated() {
+            print("\(i): \(l)")
+        }
+
+        
 //        try! FileManager.default.copyItem(atPath: NSHomeDirectory() + "/Documents/app_logs", toPath: NSHomeDirectory() + "/Documents/app_logs.og")
         
         //        print("files:\n  " + ((FileManager.default.enumerator(atPath: NSHomeDirectory())!.allObjects as? [String])?.joined(separator: "\n  ") ?? ""))

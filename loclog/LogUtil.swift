@@ -59,7 +59,13 @@ public class LogUtil {
             lines = lines.suffix(last)
         }
         lines = lines.filter({ l in !l.isEmpty})
-        return lines.map({ l in try! jsonDecoder.decode(LogEntry.self, from: l.data(using: .utf8)!)})
+        return lines.enumerated().compactMap({ (i, l) -> LogEntry? in
+            let result = try? jsonDecoder.decode(LogEntry.self, from: l.data(using: .utf8)!)
+            if result == nil {
+                print("error json decoding last \(last?.description ?? "<none>") lines of \(url) at line \(i):\n'\(l)'")
+            }
+            return result
+        })
     }
     
     static func clear(url: URL) {
